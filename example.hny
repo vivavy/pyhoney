@@ -1,0 +1,3 @@
+fn main(args: str<>) {
+	printf("Hello, World!\nTest number: %d", 32)
+}
