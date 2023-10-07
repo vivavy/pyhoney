@@ -162,3 +162,7 @@ cython_debug/
 *.elf
 *.out
 *.hsp
+*.c
+*.pgt
+*.pyc
+*__pycache__*
