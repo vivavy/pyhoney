@@ -1,7 +1,8 @@
 from shutil import which
 
 def detect_compiler_base(compiler_name: str,
-                         version_range: tuple[int, int]):
+                         version_range: tuple[int, int]
+                        ) -> str | None:
     if compiler := which(compiler_name):
         return compiler
 
