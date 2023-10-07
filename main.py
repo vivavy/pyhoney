@@ -1,5 +1,5 @@
 import os, sys, pprint
-
+import detect_c_compiler as comp_detector
 
 nostdlib = " --no-stdlib" if "--no-stdlib" in sys.argv else ""
 
@@ -16,12 +16,21 @@ for a in sys.argv:
 	if a == "-o":
 		outf = sys.argv[sys.argv.index(a)+1]
 
-comp = "gcc"
+comp = None
+comp_opts = ""
 
 for a in sys.argv:
 	if a == "-c":
 		comp = sys.argv[sys.argv.index(a)+1]
+	elif a == "-cf":  # Compiler Flags
+	    comp_opts += sys.argv[sys.argv.index(a)+1]
 
-# print(comp+" "+inf+" -o "+outf)
+# If user don't provide compiler manually, then detect it automatically
+if comp is None:
+    comp = comp_detector.detect_compiler()
 
-os.system(comp+" "+inf+" -o "+outf)
+command = comp+" "+comp_opts+" "+inf+" -o "+outf
+
+print(command)
+
+os.system(command)
