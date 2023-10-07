@@ -1,6 +1,10 @@
 import os, sys, pprint
 import detect_c_compiler as comp_detector
 
+
+if len(sys.argv) <= (1,2)[sys.argv[-1].startswith("py")]:
+	print("Honey. add source file path to arguments.\n")
+
 nostdlib = " --no-stdlib" if "--no-stdlib" in sys.argv else ""
 
 # os.system(["clear", "cls"][os.name == 'nt'])
