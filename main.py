@@ -1,20 +1,27 @@
 import os, sys, pprint
 import detect_c_compiler as comp_detector
-
+import hnyir
+import os.path
 
 if len(sys.argv) <= (1,2)[sys.argv[-1].startswith("py")]:
 	print("Honey. add source file path to arguments.\n")
 
 nostdlib = " --no-stdlib" if "--no-stdlib" in sys.argv else ""
 
+module_name = os.path.splitext(sys.argv[-1])[0]
+
+print("Module:", module_name)
+
 # os.system(["clear", "cls"][os.name == 'nt'])
-os.system("python3 hnyir.py "+sys.argv[-1]+nostdlib)
-os.system("python3 hisp.py "+sys.argv[-1][::-1].split(".", 1)\
-	[1][::-1]+".hsp"+nostdlib)
+# os.system("python3 hnyir.py "+sys.argv[-1]+nostdlib)
 
-inf = sys.argv[-1][::-1].split(".", 1)[1][::-1]+".c"
+hnyir.gen_write_hisp(sys.argv[-1])
 
-outf = sys.argv[-1][::-1].split(".", 1)[1][::-1]+".out"
+os.system("python3 hisp.py "+module_name+".hsp"+nostdlib)
+
+inf = module_name+".c"
+
+outf = module_name+".out"
 
 for a in sys.argv:
 	if a == "-o":
