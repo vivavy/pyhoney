@@ -2,18 +2,32 @@ SHELL := /bin/bash
 
 
 main:
-	@python3 -m venv venv
-	@source ./venv/bin/activate;         \
-	pip install pyinstaller >/dev/null;  \
-	pyinstaller main.py                  \
-		-n "hny"                         \
-		--add-data hisp.glr:.            \
-		--add-data hisp.py:.             \
-		--add-data hny.glr:.             \
-		--add-data hnyir.py:.            \
-		--log-level WARN                 \
-		-F
-	@mv -f dist/hny hny
-	@rm -f hny.spec
-	@rm -rf build dist venv
-	@find -iname "*.pyc" -delete
+	@printf "\nPlease, specify a command. Available commands:\n\n - install\n"
+	@printf " - uninstall\n - remove\n\n"
+	@exit
+
+install:
+	mkdir /usr/share/pyhoney
+	cp ./main.py /usr/share/pyhoney/main.py
+	cp ./hnyir.py /usr/share/pyhoney/hnyir.py
+	cp ./hisp.py /usr/share/pyhoney/hisp.py
+	cp ./hny.glr /usr/share/pyhoney/hny.glr
+	cp ./hisp.glr /usr/share/pyhoney/hisp.glr
+	chmod +x hny
+	cp ./hny /usr/bin/hny
+	echo Done
+
+uninstall: remove
+	@printf""
+
+remove:
+	rm -f ./main.py /usr/share/pyhoney/main.py
+	rm -f ./hnyir.py /usr/share/pyhoney/hnyir.py
+	rm -f ./hisp.py /usr/share/pyhoney/hisp.py
+	rm -f ./hny.glr /usr/share/pyhoney/hny.glr
+	rm -f ./hisp.glr /usr/share/pyhoney/hisp.glr
+	rm -f /usr/bin/hny
+	echo Done
+
+reinstall: remove install
+	@printf ""
