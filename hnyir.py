@@ -1,7 +1,7 @@
 from parglare import Grammar, Parser
 from pprint import pprint, pformat
 import sys
-
+import os.path
 
 procs = {}
 
@@ -90,6 +90,7 @@ def gen_write_hisp(filename: str):
 
     code = genhisp(procs)
 
-    with open(filename[::-1].split(".", 1)\
-	    [1][::-1]+".hsp", "wt", encoding="cp866") as f:
+    with open(os.path.splitext(filename)[0] + ".hsp",
+              "wt",
+              encoding="cp866") as f:
 	    f.write(code)
