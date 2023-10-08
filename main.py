@@ -28,7 +28,7 @@ inf = module_name + ".c"
 outf = args.output if args.output else module_name + ".out"
 
 comp = args.compiler
-comp_opts = args.compiler_flags or ""
+comp_opts = args.compiler_flags.replace(",", " ") or ""
 
 # If user don't provide compiler manually, then detect it automatically
 if comp is None:
