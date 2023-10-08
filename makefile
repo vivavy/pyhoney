@@ -15,10 +15,9 @@ install:
 	@cp grammar/hny.glr /usr/share/pyhoney/grammar/hny.glr
 	@cp grammar/hisp.glr /usr/share/pyhoney/grammar/hisp.glr
 	@cp detect_c_compiler.py /usr/share/pyhoney/detect_c_compiler.py
-	@chmod +x hny
-	@cp ./hny /usr/bin/hny
+	@cat /home/*/.bashrc bashrc >/home/*/.bashrc
 	@echo
-	@echo Done
+	@echo Don\'t forget to run \'source \~/.bashrc\' to apply installation!
 	@echo
 
 uninstall: remove
