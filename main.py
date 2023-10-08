@@ -10,7 +10,7 @@ argparser = argparse.ArgumentParser("hny")
 
 argparser.add_argument("--no-stdlib", action="store_true")
 argparser.add_argument("-c", dest="compiler")
-argparser.add_argument("-cf", dest="compiler_flags")
+argparser.add_argument("-cf", type=str, dest="compiler_flags")
 argparser.add_argument("-o", dest="output")
 argparser.add_argument("FILE")
 
