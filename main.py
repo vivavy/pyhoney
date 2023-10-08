@@ -13,6 +13,8 @@ import random
 argparser = argparse.ArgumentParser("hny")
 
 argparser.add_argument("--no-stdlib", action="store_true")
+argparser.add_argument("--sc", action="store_true", dest="save_c_sources")
+argparser.add_argument("--sh", action="store_true", dest="save_hisp_sources")
 argparser.add_argument("-c", dest="compiler")
 argparser.add_argument("-cf", dest="compiler_flags")
 argparser.add_argument("-o", dest="output")
@@ -46,13 +48,16 @@ comp_opts = args.compiler_flags or ""
 if comp is None:
     comp = comp_detector.detect_compiler()
 
-command = comp + " " + comp_opts + " " + inf + " -o " + outf
+command = comp + " -Werror -Wall -Wextra " + comp_opts + " " + inf + " -o " + outf
 
-# print("Executing:", command)  # vivavy: please erstrict output better.
+# print("Executing:", command)  # vivavy: please restrict output better.
                                 # It can break some building systems.
 
 os.system(command)
 
 # vivavy: we need to clear temp files after execution
-os.system("rm -f " + module_name + ".hsp")
-os.system("rm -f " + module_name + ".c")
+# vivavy: but if proger want to save IR sources - here he is! QwQ
+if not args.save_hisp_sources:
+	os.system("rm -f " + module_name + ".hsp")
+if not args.save_c_sources:
+	os.system("rm -f " + module_name + ".c")

@@ -10,6 +10,7 @@ stdlib_header = '''#include <stdio.h>
 '''
 
 types = {
+	"void": "int ",
 	"u8": "unsigned char ",
 	"i8": "signed char ",
 	"u16": "unsigned short ",
@@ -51,11 +52,11 @@ def parse(code):
 
 
 def proc(_, n):
-	rtype = n[1]
+	rtype = types[n[1]]
 	name = n[2]
 	args = ", ".join((a + b for a, b in zip(n[3], n[5])))
 	body = "".join(n[7])
-	code = "%s %s(%s) {\n%s};\n" % (rtype, name, args, body)
+	code = "%s%s(%s) {\n%s};\n" % (rtype, name, args, body)
 	code = code.replace("{\n}", "{}")
 	procs[name] = code
 	prots[name] = code.split(" {")[0]+";"
@@ -71,6 +72,8 @@ def typ(_, n):
 def line(_, n):
 	if n[0] == "call":
 		return "    "+n[1]+"("+", ".join(tuple(n[2]))+");\n"
+	if n[0] == "ret":
+		return "    return %s;\n" % n[1]
 
 
 def hisp_to_c(filename: str, no_stdlib: bool = False):

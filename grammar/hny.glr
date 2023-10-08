@@ -1,19 +1,21 @@
 root: rline*;
 
 rline: def_import
-     | def_proc
+     | def_func
      ;
 
 def_import: "import" string;
-def_proc: "fn" name lparn (def_def (comma def_def)*)? rparn lparf line* rparf;
+def_func: "fn" name lparn (def_def (comma def_def)*)? rparn (arrow type)? lparf line* rparf;
 
 def_def: name colon type;
 
 type: name (lpara int? rpara)?;
 
-line: call;
+line: call | ret;
 
 call: name lparn (expr (comma expr)*)? rparn;
+
+ret: "return" expr;
 
 expr: int | string | name | call;
 

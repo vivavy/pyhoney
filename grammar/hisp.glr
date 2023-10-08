@@ -5,7 +5,7 @@ proc: "fn" name name type* comma name* semi
 
 type: "array"? name;
 
-line: "call" name expr* comma;
+line: "call" name expr* comma | "ret" expr comma;
 
 expr: int | string | name;
 
