@@ -7,13 +7,13 @@ main:
 	@exit
 
 install:
-	@mkdir -p /usr/share/pyhoney
+	@mkdir -p /usr/share/pyhoney /usr/share/pyhoney/grammar
 	@python3 -m pip install parglare >/dev/null
 	@cp main.py /usr/share/pyhoney/main.py
 	@cp hnyir.py /usr/share/pyhoney/hnyir.py
 	@cp hisp.py /usr/share/pyhoney/hisp.py
-	@cp hny.glr /usr/share/pyhoney/grammar/hny.glr
-	@cp hisp.glr /usr/share/pyhoney/grammar/hisp.glr
+	@cp grammar/hny.glr /usr/share/pyhoney/grammar/hny.glr
+	@cp grammar/hisp.glr /usr/share/pyhoney/grammar/hisp.glr
 	@cp detect_c_compiler.py /usr/share/pyhoney/detect_c_compiler.py
 	@chmod +x hny
 	@cp ./hny /usr/bin/hny

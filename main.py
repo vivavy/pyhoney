@@ -1,3 +1,5 @@
+## totally refactored by NDRAEY
+
 import os
 import sys
 import pprint
@@ -36,6 +38,7 @@ if comp is None:
 
 command = comp + " " + comp_opts + " " + inf + " -o " + outf
 
-print("Executing:", command)
+# print("Executing:", command)  # vivavy: please erstrict output better.
+				# It can break some building systems.
 
 os.system(command)
