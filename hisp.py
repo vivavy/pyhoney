@@ -46,8 +46,8 @@ def parse(code):
 		"type": typ,
 		"line": line
 	}
-	return Parser(grammar=Grammar.from_file("grammar/hisp.glr"), \
-		actions=actions).parse(code)
+	return Parser(grammar=Grammar.from_file("grammar/hisp.glr"),
+				  actions=actions).parse(code)
 
 
 def proc(_, n):
@@ -88,3 +88,13 @@ def hisp_to_c(filename: str, no_stdlib: bool = False):
 		code += "\n".join(tuple(prots.values())) + "\n" * 3 + "\n".join(tuple(procs.values()))
 
 		f.write(code)
+
+
+if __name__ == "__main__":
+	if len(sys.argv) < 2:
+		print("No input files.")
+		exit(1)
+
+	file = sys.argv[-1]
+
+	hisp_to_c(file)
