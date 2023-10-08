@@ -1,7 +1,7 @@
 from parglare import Grammar, Parser
 from pprint import pprint, pformat
 import sys
-
+import os.path
 
 procs = {}
 
@@ -16,7 +16,7 @@ def parse(code):
 		'ellipse': lambda _, n: ['ellipse', n],
 		'import': lambda _, n: ['import', eval(n[1])]
 	}
-	return Parser(grammar=Grammar.from_file("hny.glr"), \
+	return Parser(grammar=Grammar.from_file("grammar/hny.glr"), \
 		actions=actions).parse(code)
 
 
@@ -82,14 +82,15 @@ def genhisp(procs):
 		code = code[:-1] + ";\n"
 	return code[1:]
 
+def gen_write_hisp(filename: str):
+    with open(filename, "rt", encoding="cp866") as f:
+	    src = f.read()
 
-with open(sys.argv[-1], "rt", encoding="cp866") as f:
-	src = f.read()
+    parse(src)
 
-parse(src)
+    code = genhisp(procs)
 
-code = genhisp(procs)
-
-with open(sys.argv[-1][::-1].split(".", 1)\
-	[1][::-1]+".hsp", "wt", encoding="cp866") as f:
-	f.write(code)
+    with open(os.path.splitext(filename)[0] + ".hsp",
+              "wt",
+              encoding="cp866") as f:
+	    f.write(code)

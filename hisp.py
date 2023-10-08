@@ -1,7 +1,13 @@
+import os
+
 from parglare import Grammar, Parser
 from pprint import pprint, pformat
 import sys
 
+stdlib_header = '''#include <stdio.h>
+#include <stdlib.h>
+
+'''
 
 types = {
 	"u8": "unsigned char ",
@@ -40,8 +46,8 @@ def parse(code):
 		"type": typ,
 		"line": line
 	}
-	return Parser(grammar=Grammar.from_file("hisp.glr"), \
-		actions=actions).parse(code)
+	return Parser(grammar=Grammar.from_file("grammar/hisp.glr"),
+				  actions=actions).parse(code)
 
 
 def proc(_, n):
@@ -67,14 +73,28 @@ def line(_, n):
 		return "    "+n[1]+"("+", ".join(tuple(n[2]))+");\n"
 
 
-with open(sys.argv[-1], "rt", encoding="cp866") as f:
-	src = f.read()
+def hisp_to_c(filename: str, no_stdlib: bool = False):
+	with open(filename, "rt", encoding="cp866") as f:
+		src = f.read()
 
-prod = parse(src)
+	prod = parse(src)
 
-with open(sys.argv[-1][::-1].split(".", 1)\
-	[1][::-1]+".c", "wt", encoding="cp866") as f:
-	f.write(("#include <stdio.h>\n#include <stdlib.h>\n\n\n"
-		if "--no-stdlib" not in sys.argv else "")+
-		"\n".join(tuple(prots.values()))+"\n"*3+
-		"\n".join(tuple(procs.values())))
+	with open(os.path.splitext(filename)[0] + ".c", "wt", encoding="cp866") as f:
+		code = ""
+
+		if not no_stdlib:
+			code += stdlib_header
+
+		code += "\n".join(tuple(prots.values())) + "\n" * 3 + "\n".join(tuple(procs.values()))
+
+		f.write(code)
+
+
+if __name__ == "__main__":
+	if len(sys.argv) < 2:
+		print("No input files.")
+		exit(1)
+
+	file = sys.argv[-1]
+
+	hisp_to_c(file)
