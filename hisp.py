@@ -40,7 +40,7 @@ def parse(code):
 		"type": typ,
 		"line": line
 	}
-	return Parser(grammar=Grammar.from_file("hisp.glr"), \
+	return Parser(grammar=Grammar.from_file("grammar/hisp.glr"), \
 		actions=actions).parse(code)
 
 
