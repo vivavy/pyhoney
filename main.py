@@ -1,5 +1,3 @@
-## totally refactored by NDRAEY
-
 import os
 import sys
 import pprint
@@ -7,6 +5,10 @@ import detect_c_compiler as comp_detector
 import hisp
 import hnyir
 import argparse
+import random
+
+
+# NDRAEY: arguments parsing
 
 argparser = argparse.ArgumentParser("hny")
 
@@ -17,17 +19,25 @@ argparser.add_argument("-o", dest="output")
 argparser.add_argument("FILE")
 
 args = argparser.parse_args()
+
+# vivavy: compile time
+# NDRAEY: refactored
+# vivavy: added temp file names mangling
+
 module_name = os.path.splitext(args.FILE)[0]
 
-# os.system(["clear", "cls"][os.name == 'nt'])
+name_hash = hex(hash(module_name) + random.randint(-abs(hash(module_name)), \
+	abs(hash(module_name))))[2:]
 
-hnyir.gen_write_hisp(args.FILE)
+module_name += "." + name_hash  # vivavy: we need it for security: 
+                                # if there was not mangling, file names could conflict,
+                                # and it can cause a lot of problems.
 
-# os.system("python3 hisp.py " + module_name + ".hsp" + (" --no-stdlib" if args.no_stdlib else ""))
+hnyir.gen_write_hisp(args.FILE, module_name+".hsp")
 hisp.hisp_to_c(module_name + ".hsp", args.no_stdlib)
 
 inf = module_name + ".c"
-outf = args.output if args.output else module_name + ".out"
+outf = args.output if args.output else os.path.splitext(args.FILE)[0] + ".out"
 
 comp = args.compiler
 comp_opts = args.compiler_flags or ""
@@ -39,6 +49,10 @@ if comp is None:
 command = comp + " " + comp_opts + " " + inf + " -o " + outf
 
 # print("Executing:", command)  # vivavy: please erstrict output better.
-				# It can break some building systems.
+                                # It can break some building systems.
 
 os.system(command)
+
+# vivavy: we need to clear temp files after execution
+os.system("rm -f " + module_name + ".hsp")
+os.system("rm -f " + module_name + ".c")

@@ -82,7 +82,7 @@ def genhisp(procs):
 		code = code[:-1] + ";\n"
 	return code[1:]
 
-def gen_write_hisp(filename: str):
+def gen_write_hisp(filename: str, of: str = None):
     with open(filename, "rt", encoding="cp866") as f:
 	    src = f.read()
 
@@ -90,7 +90,7 @@ def gen_write_hisp(filename: str):
 
     code = genhisp(procs)
 
-    with open(os.path.splitext(filename)[0] + ".hsp",
+    with open(of or os.path.splitext(filename)[0] + ".hsp",
               "wt",
               encoding="cp866") as f:
 	    f.write(code)
