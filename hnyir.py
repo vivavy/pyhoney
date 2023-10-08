@@ -16,7 +16,7 @@ def parse(code):
 		'ellipse': lambda _, n: ['ellipse', n],
 		'import': lambda _, n: ['import', eval(n[1])]
 	}
-	return Parser(grammar=Grammar.from_file("hny.glr"), \
+	return Parser(grammar=Grammar.from_file("grammar/hny.glr"), \
 		actions=actions).parse(code)
 
 
