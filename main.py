@@ -3,14 +3,13 @@ import detect_c_compiler as comp_detector
 import hnyir
 import os.path
 
-if len(sys.argv) <= (1,2)[sys.argv[-1].startswith("py")]:
+if len(sys.argv) <= (1,2)[sys.argv[0].startswith("py")]:
 	print("Honey. add source file path to arguments.\n")
+	exit()
 
 nostdlib = " --no-stdlib" if "--no-stdlib" in sys.argv else ""
 
 module_name = os.path.splitext(sys.argv[-1])[0]
-
-print("Module:", module_name)
 
 # os.system(["clear", "cls"][os.name == 'nt'])
 # os.system("python3 hnyir.py "+sys.argv[-1]+nostdlib)
@@ -42,6 +41,6 @@ if comp is None:
 
 command = comp+" "+comp_opts+" "+inf+" -o "+outf
 
-print(command)
+# print(command)
 
 os.system(command)

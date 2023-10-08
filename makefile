@@ -7,27 +7,34 @@ main:
 	@exit
 
 install:
-	mkdir /usr/share/pyhoney
-	cp ./main.py /usr/share/pyhoney/main.py
-	cp ./hnyir.py /usr/share/pyhoney/hnyir.py
-	cp ./hisp.py /usr/share/pyhoney/hisp.py
-	cp ./hny.glr /usr/share/pyhoney/hny.glr
-	cp ./hisp.glr /usr/share/pyhoney/hisp.glr
-	chmod +x hny
-	cp ./hny /usr/bin/hny
-	echo Done
+	@mkdir -p /usr/share/pyhoney
+	@python3 -m pip install parglare >/dev/null
+	@cp main.py /usr/share/pyhoney/main.py
+	@cp hnyir.py /usr/share/pyhoney/hnyir.py
+	@cp hisp.py /usr/share/pyhoney/hisp.py
+	@cp hny.glr /usr/share/pyhoney/hny.glr
+	@cp hisp.glr /usr/share/pyhoney/hisp.glr
+	@cp detect_c_compiler.py /usr/share/pyhoney/detect_c_compiler.py
+	@chmod +x hny
+	@cp ./hny /usr/bin/hny
+	@echo
+	@echo Done
+	@echo
 
 uninstall: remove
-	@printf""
+	@printf ""
 
 remove:
-	rm -f ./main.py /usr/share/pyhoney/main.py
-	rm -f ./hnyir.py /usr/share/pyhoney/hnyir.py
-	rm -f ./hisp.py /usr/share/pyhoney/hisp.py
-	rm -f ./hny.glr /usr/share/pyhoney/hny.glr
-	rm -f ./hisp.glr /usr/share/pyhoney/hisp.glr
-	rm -f /usr/bin/hny
-	echo Done
+	@rm -f /usr/share/pyhoney/main.py
+	@rm -f /usr/share/pyhoney/hnyir.py
+	@rm -f /usr/share/pyhoney/hisp.py
+	@rm -f /usr/share/pyhoney/hny.glr
+	@rm -f /usr/share/pyhoney/hisp.glr
+	@rm -f /usr/share/pyhoney/detect_c_compiler.py
+	@rm -f /usr/bin/hny
+	@echo
+	@echo Done
+	@echo
 
 reinstall: remove install
 	@printf ""

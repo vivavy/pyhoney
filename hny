@@ -1,1 +1,1 @@
-python3 /usr/share/main.py $@
+python3 /usr/share/pyhoney/main.py $@
