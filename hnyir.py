@@ -75,7 +75,7 @@ def genhisp(procs):
 		for l in p[2]:
 			if l[0] == "call":
 				args = tuple(l[2])
-				print(args)
+				# print(args)
 				code += "    call %s %s" % (l[1],
 					" ".join(args))
 				code += ",\n"

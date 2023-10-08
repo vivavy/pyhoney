@@ -2,19 +2,22 @@ import os, sys, pprint
 import detect_c_compiler as comp_detector
 
 
-if len(sys.argv) <= (1,2)[sys.argv[-1].startswith("py")]:
+if len(sys.argv) <= (1,2)[sys.argv[0].startswith("py")]:
 	print("Honey. add source file path to arguments.\n")
+	exit()
 
 nostdlib = " --no-stdlib" if "--no-stdlib" in sys.argv else ""
 
+srcf = os.path.abspath(sys.argv[-1])
+
 # os.system(["clear", "cls"][os.name == 'nt'])
-os.system("python3 hnyir.py "+sys.argv[-1]+nostdlib)
-os.system("python3 hisp.py "+sys.argv[-1][::-1].split(".", 1)\
+os.system("python3 hnyir.py "+srcf+nostdlib)
+os.system("python3 hisp.py "+srcf[::-1].split(".", 1)\
 	[1][::-1]+".hsp"+nostdlib)
 
-inf = sys.argv[-1][::-1].split(".", 1)[1][::-1]+".c"
+inf = srcf[::-1].split(".", 1)[1][::-1]+".c"
 
-outf = sys.argv[-1][::-1].split(".", 1)[1][::-1]+".out"
+outf = srcf[::-1].split(".", 1)[1][::-1]+".out"
 
 for a in sys.argv:
 	if a == "-o":
@@ -35,6 +38,6 @@ if comp is None:
 
 command = comp+" "+comp_opts+" "+inf+" -o "+outf
 
-print(command)
+# print(command)
 
 os.system(command)
