@@ -73,7 +73,7 @@ def flat(a):
 
 
 def typ(n):
-	array = ("","array ")[int(bool(n[1]))]
+	array = ("","<> ")[int(bool(n[1]))]
 	return array+n[0]
 
 

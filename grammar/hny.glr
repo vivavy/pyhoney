@@ -17,7 +17,7 @@ call: name lparn (expr (comma expr)*)? rparn;
 
 ret: "return" expr;
 
-expr: int | string | name | call;
+expr: int | string | name | ellipse | call;
 
 terminals
 

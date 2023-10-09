@@ -1,3 +1,4 @@
-fn main() {
+fn main(argc: int, argv: str<>) -> int {
 	printf("Hello, World!\nTest number: %d\n", 32)
+	return 0
 }

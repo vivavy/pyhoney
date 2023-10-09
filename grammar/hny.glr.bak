@@ -1,18 +1,28 @@
-root: proc*;
+root: rline*;
 
-proc: "fn" name name type* comma name* semi
-	line* semi;
+rline: def_import
+     | def_func
+     ;
 
-type: "<>"? name;
+def_import: "import" string;
+def_func: "fn" name lparn (def_def (comma def_def)*)? rparn (arrow type)? lparf line* rparf;
 
-line: "call" name expr* comma | "ret" expr comma;
+def_def: name colon type;
 
-expr: int | string | name;
+type: name (lpara int? rpara)?;
+
+line: call | ret;
+
+call: name lparn (expr (comma expr)*)? rparn;
+
+ret: "return" expr;
+
+expr: int | string | name | call;
 
 terminals
 
 string: /('[^\n'\\]*(?:\\.[^\n'\\]*)*'|"[^\n"\\]*(?:\\.[^\n"\\]*)*")/;
-int: /-?(0[Xx][A-Za-z0-9][A-Za-z0-9_]*|\d+|1[01]*[Bb]|0[Bb]|0[xX][0-9a-fA-F]+)/;
+int: /[+-]?(0[Xx][A-Za-z0-9][A-Za-z0-9_]*|\d+|1[01]*[Bb]|0[Bb]|0[xX][0-9a-fA-F]+)/;
 name: /[A-Za-z_]\w*/;
 ellipse: '...';
 plus: '+' ;
@@ -43,4 +53,3 @@ rparb: ']' ;
 lpara: '<' ;
 rpara: '>' ;
 arrow: '->' ;
-
