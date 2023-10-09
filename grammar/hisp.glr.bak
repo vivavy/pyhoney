@@ -1,0 +1,46 @@
+root: proc*;
+
+proc: "fn" name name type* comma name* semi
+	line* semi;
+
+type: "array"? name;
+
+line: "call" name expr* comma | "ret" expr comma;
+
+expr: int | string | name;
+
+terminals
+
+string: /('[^\n'\\]*(?:\\.[^\n'\\]*)*'|"[^\n"\\]*(?:\\.[^\n"\\]*)*")/;
+int: /-?(0[Xx][A-Za-z0-9][A-Za-z0-9_]*|\d+|1[01]*[Bb]|0[Bb]|0[xX][0-9a-fA-F]+)/;
+name: /[A-Za-z_]\w*/;
+ellipse: '...';
+plus: '+' ;
+minus: '-' ;
+star: '*' ;
+slash: '/' ;
+colon: ':' ;
+semi: ';' ;
+and: '&' ;
+expl: '!' ;
+at: '@' ;
+bux: '$' ;
+percent: '%' ;
+flex: '^' ;
+equal: '=' ;
+apos: '`' ;
+tilde: '~' ;
+bslash: '\\' ;
+vbar: '|' ;
+dot: '.' ;
+comma: ',' ;
+lparn: '(' ;
+rparn: ')' ;
+lparf: '{' ;
+rparf: '}' ;
+lparb: '[' ;
+rparb: ']' ;
+lpara: '<' ;
+rpara: '>' ;
+arrow: '->' ;
+

@@ -48,7 +48,12 @@ comp_opts = args.compiler_flags or ""
 if comp is None:
     comp = comp_detector.detect_compiler()
 
-command = comp + " -Werror -Wall -Wextra " + comp_opts + " " + inf + " -o " + outf
+# We shouldn't crash if there is no one compiler found
+try:
+    command = comp + " -Werror -Wall -Wextra " + comp_opts + " " + inf + " -o " + outf
+except TypeError:
+    print("Compiler not found!")
+    sys.exit(1)
 
 # print("Executing:", command)  # vivavy: please restrict output better.
                                 # It can break some building systems.
