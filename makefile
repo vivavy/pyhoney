@@ -18,7 +18,7 @@ install:
 
 apply:
 	@python3 -m pip install parglare >/dev/null
-	@cat /home/*/.bashrc bashrc >/home/*/.bashrc
+	@cat ${HOME}/.bashrc bashrc >${HOME}/.bashrc
 
 uninstall: remove
 	@printf ""
