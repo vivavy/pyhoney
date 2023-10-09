@@ -2,38 +2,35 @@ SHELL := /bin/bash
 
 
 main:
-	@printf "\nPlease, specify a command. Available commands:\n\n - install\n"
-	@printf " - uninstall\n - remove\n\n"
+	@echo "Type \`sudo make install' and \`make apply' for installation \
+(second if it is your first installation) or \`sudo make uninstall' for uninstallation"
+	@echo "For update, type \`sudo make update'"
 	@exit
 
 install:
 	@mkdir -p /usr/share/pyhoney /usr/share/pyhoney/grammar
+	@mkdir -p /usr/share/pyhoney/objects /usr/share/pyhoney/lds
+	@cp *.py /usr/share/pyhoney
+	@rm /usr/share/pyhoney/update.py
+	@cp grammar/*.glr /usr/share/pyhoney/grammar
+	@cp lds/*.ld /usr/share/pyhoney/lds
+	@echo
+
+apply:
 	@python3 -m pip install parglare >/dev/null
-	@cp main.py /usr/share/pyhoney/main.py
-	@cp hnyir.py /usr/share/pyhoney/hnyir.py
-	@cp hisp.py /usr/share/pyhoney/hisp.py
-	@cp grammar/hny.glr /usr/share/pyhoney/grammar/hny.glr
-	@cp grammar/hisp.glr /usr/share/pyhoney/grammar/hisp.glr
-	@cp detect_c_compiler.py /usr/share/pyhoney/detect_c_compiler.py
 	@cat /home/*/.bashrc bashrc >/home/*/.bashrc
-	@echo
-	@echo Don\'t forget to run \'source \~/.bashrc\' to apply installation!
-	@echo
 
 uninstall: remove
 	@printf ""
 
 remove:
-	@rm -f /usr/share/pyhoney/main.py
-	@rm -f /usr/share/pyhoney/hnyir.py
-	@rm -f /usr/share/pyhoney/hisp.py
-	@rm -f /usr/share/pyhoney/grammar/hny.glr
-	@rm -f /usr/share/pyhoney/grammar/hisp.glr
-	@rm -f /usr/share/pyhoney/detect_c_compiler.py
-	@rm -f /usr/bin/hny
+	@rm -rf /usr/share/pyhoney
 	@echo
 	@echo Done
 	@echo
 
 reinstall: remove install
 	@printf ""
+
+update:
+	@python3 update.py
