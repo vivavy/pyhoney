@@ -18,7 +18,7 @@ def detect_format(i):
     return hnyir.data["format"]
 
 #  format is a function makes file ready for use
-def f_auto(i, o, no_stdlib, full_log, name):
+def f_auto(i, o, no_stdlib, full_log, name, rt):
 
     hnyir.gen_write_hisp(i, name + ".hl")
     hisp.hisp_to_c(name + ".hl", no_stdlib)
@@ -27,26 +27,28 @@ def f_auto(i, o, no_stdlib, full_log, name):
     os.system(c + " -Werror -Wall -Wextra -Wno-unused-value -O3 -o " + \
         (o or os.path.splitext(name)[0]) + " " + name + ".c")
 
-    os.system("rm " + name + ".hl")
-    os.system("rm " + name + ".c")
+    if rt:
+        os.system("rm " + name + ".hl")
+        os.system("rm " + name + ".c")
 
-def f_multiboot(i, o, no_stdlib, full_log, name):
+def f_multiboot(i, o, no_stdlib, full_log, name, rt):
 
     hnyir.gen_write_hisp(i, name + ".hl")
     hisp.hisp_to_c(name + ".hl", no_stdlib)
 
     c = detect_c_compiler.detect_compiler_base("i686-elf-gcc", (9, 16))
     os.system(c + " -c -Werror -Wall -Wextra -Wno-unused-value -O2 -ffreestanding -o " + \
-        (o or name) + ".o" + " " + name + ".c")
+        name + ".o" + " " + name + ".c")
 
     # building trampoline
     os.system(c + " -T lds/multiboot.ld -ffreestanding -O2 -nostdlib -o " + \
         (o or (os.path.splitext(name)[0] + ".elf")) + " objects/multiboot.o " + \
-        (o or name) + ".o")
+        name + ".o")
 
-    os.system("rm " + name + ".hl")
-    os.system("rm " + name + ".c")
-    os.system("rm " + name + ".o")
+    if rt:
+        os.system("rm " + name + ".hl")
+        os.system("rm " + name + ".c")
+        os.system("rm " + name + ".o")
 
 forms = {
     "auto": f_auto,
@@ -83,4 +85,4 @@ module_name += "." + name_hash  # vivavy: we need it for security:
 # detect_format return 0 if all is fine, any non-zero value otherwise
 form = args.format or detect_format(args.FILE)
 
-forms[form](args.FILE, args.output, args.no_stdlib, args.full_log, module_name)
+forms[form](args.FILE, args.output, args.no_stdlib, args.full_log, module_name, not args.save_temps)

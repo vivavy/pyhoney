@@ -75,8 +75,11 @@ def pbody(n):
 
 
 def line(n):
+	# print(">>> O", n)
 	if n[0] == "call":
 		return call(n[1:])
+	elif n == "leave":
+		return ["ret", "0"]
 	elif n[0] == "return":
 		return ["ret", n[1]]
 

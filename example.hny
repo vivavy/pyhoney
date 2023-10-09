@@ -3,5 +3,6 @@ format multiboot
 
 fn main() {
 	/* printf("Hello, World!\nArguments number: %d\n", argc) */
-	return 0
+	/* return 0 */
+	leave
 }

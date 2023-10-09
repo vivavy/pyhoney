@@ -13,7 +13,9 @@ def_def: name colon type;
 
 type: name (lpara int? rpara)?;
 
-line: call | ret | comment;
+line: call | ret | liv | comment;
+
+liv: "leave";
 
 call: name lparn (expr (comma expr)*)? rparn;
 
