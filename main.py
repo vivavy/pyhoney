@@ -16,7 +16,7 @@ argparser.add_argument("--no-stdlib", action="store_true")
 argparser.add_argument("--sc", action="store_true", dest="save_c_sources")
 argparser.add_argument("--sh", action="store_true", dest="save_hisp_sources")
 argparser.add_argument("-c", dest="compiler")
-argparser.add_argument("-cf", type=str, dest="compiler_flags")
+argparser.add_argument("-cf", dest="compiler_flags")
 argparser.add_argument("-o", dest="output")
 argparser.add_argument("FILE")
 
