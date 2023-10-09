@@ -1,4 +1,7 @@
-fn main(argc: int, argv: str<>) -> int {
-	printf("Hello, World!\nTest number: %d\n", 32)
+format multiboot
+
+
+fn main() {
+	/* printf("Hello, World!\nArguments number: %d\n", argc) */
 	return 0
 }

@@ -1,0 +1,32 @@
+format elf
+
+extrn main
+public _start
+
+section ".multiboot_header"
+
+@@:
+    dd 0xE85250D6
+    dd 0
+    dd @f-@b
+    dd 0x100000000 - (0xE85250D6 + @f - @b)
+    dd 0
+    dd 8
+@@:
+
+section '.text' executable
+
+_start:
+    mov esp, stack_top
+    push dword 0 dword 0  ; argv = NULL, argc = 0
+    call main
+    add esp, 8
+    test eax, eax
+    hlt
+    jmp $-1
+
+section '.bss' writeable
+
+    rd 2048
+
+stack_top:

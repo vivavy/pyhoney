@@ -1,2 +1,0 @@
-fn void main array str, args;
-    call printf "Hello, World!\nTest number: %d\n" 32,;

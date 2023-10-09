@@ -41,6 +41,13 @@ procs = {}
 prots = {}
 
 
+c_predefined = """
+
+void ignore(void *data) {data;}
+
+"""
+
+
 def parse(code):
 	actions = {
 		"proc": proc,
@@ -64,6 +71,7 @@ def proc(_, n):
 
 
 def typ(_, n):
+	# print(">>> Y", n)
 	if not n[0]:
 		n[0] = ""
 	return types[" ".join(tuple(n)).strip()]
@@ -77,16 +85,18 @@ def line(_, n):
 
 
 def hisp_to_c(filename: str, no_stdlib: bool = False):
-	with open(filename, "rt", encoding="cp866") as f:
+	with open(filename, "rt") as f:
 		src = f.read()
 
 	prod = parse(src)
 
-	with open(os.path.splitext(filename)[0] + ".c", "wt", encoding="cp866") as f:
+	with open(os.path.splitext(filename)[0] + ".c", "wt") as f:
 		code = ""
 
 		if not no_stdlib:
 			code += stdlib_header
+
+		code += c_predefined
 
 		code += "\n".join(tuple(prots.values())) + "\n" * 3 + "\n".join(tuple(procs.values()))
 
