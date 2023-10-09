@@ -41,22 +41,16 @@ hisp.hisp_to_c(module_name + ".hsp", args.no_stdlib)
 inf = module_name + ".c"
 outf = args.output if args.output else os.path.splitext(args.FILE)[0] + ".out"
 
-comp = args.compiler
-comp_opts = args.compiler_flags.replace(",", " ") or ""
+# If user don't provide compiler manually, detect it automatically
+comp = args.compiler or comp_detector.detect_compiler()
+comp_opts = args.compiler_flags or ""
 
-# If user don't provide compiler manually, then detect it automatically
+# We shouldn't crash if there is no compiler found
 if comp is None:
-    comp = comp_detector.detect_compiler()
-
-# We shouldn't crash if there is no one compiler found
-try:
-    command = comp + " -Werror -Wall -Wextra " + comp_opts + " " + inf + " -o " + outf
-except TypeError:
     print("Compiler not found!")
-    sys.exit(1)
+    sys.exit(1)        
 
-# print("Executing:", command)  # vivavy: please restrict output better.
-                                # It can break some building systems.
+command = comp + " -Werror -Wall -Wextra " + comp_opts + " " + inf + " -o " + outf
 
 os.system(command)
 
