@@ -3,7 +3,7 @@ root: proc*;
 proc: "fn" name name type* comma name* semi
 	line* semi;
 
-type: "<>"? name;
+type: "array"? name;
 
 line: "call" name expr* comma | "ret" expr comma;
 
