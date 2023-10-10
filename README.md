@@ -1,9 +1,18 @@
 # pyhoney
 For installation execute this:
 
-	git clone https://github.com/vivavy/pyhoney
-	sudo make install
+```bash
+pip install -r requirements.txt
+git clone https://github.com/vivavy/pyhoney
+sudo make install
+```
 
 if it is your first install of Honey, execute:
+```bash
+sudo make apply
+```
 
-	make apply
+Dependencies:
+
+	parglare
+ 
