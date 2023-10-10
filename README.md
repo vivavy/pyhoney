@@ -16,3 +16,7 @@ Dependencies:
 
 	parglare
  
+To install Python dependencies run following command:
+```bash
+pip3 install -r requirements.txt
+```
