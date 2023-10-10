@@ -2,7 +2,7 @@
 For installation execute this:
 
 ```bash
-pip install parglare
+pip install -r requirements.txt
 git clone https://github.com/vivavy/pyhoney
 sudo make install
 ```
