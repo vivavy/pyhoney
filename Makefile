@@ -16,7 +16,7 @@ install:
 	@echo
 
 apply:
-	@echo "python3 /usr/share/$(NAME)/main.py" >> /bin/hny
+	@echo "python3 /usr/share/$(NAME)/main.py $@" > /bin/hny
 
 uninstall: remove
 	@printf ""
