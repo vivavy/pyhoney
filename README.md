@@ -1,10 +1,11 @@
 # pyhoney
 For installation execute this:
 
+	pip install parglare
 	git clone https://github.com/vivavy/pyhoney
 	sudo make install
 
-Dependencies
+Dependencies:
 
 	parglare
  
