@@ -24,6 +24,10 @@ data = {
 	"format": "auto"
 }
 
+globs = {
+	# name: (type, None) or (type, value)
+}
+
 
 def parse(code):
 	actions = {
@@ -31,7 +35,11 @@ def parse(code):
 		'call': pcall,
 		'import': lambda _, n: ['import', eval(n[1])],
 		'comment': lambda _, n: ['comment', n],
-		'def_format': formatp
+		'def_format': formatp,
+		'def_def': lambda _, n: ["def", n[2], n[0]],
+		'def_var': lambda _, n: ["var", n[2], n[0]],
+		'getv': lambda _, n: n[0]+(f"[{n[1][1]}]" if n[1] else ""),
+		'assign': lambda _, n: ["assign", n[0], n[2]]
 	}
 	return Parser(grammar=Grammar.from_file("grammar/hny.glr"), \
 		actions=actions).parse(code)
@@ -82,6 +90,7 @@ def line(n):
 		return ["ret", "0"]
 	elif n[0] == "return":
 		return ["ret", n[1]]
+	return n
 
 
 def call(n):
@@ -112,8 +121,15 @@ def typ(n):
 	return array+n[0]
 
 
-def genhisp(procs):
-	code = ""
+def genhisp(procs, prod):
+	code = " "
+
+	for n in prod:
+		if n[0] == "def":
+			code += "def " + typ(n[1]) + " " + n[2] + "\n"
+		if n[0] == "var":
+			# print(n)
+			code += "var " + typ(n[2][1]) + " " + n[2][2] + " " + n[1] + "\n"
 
 	for p in tuple(procs.values()):
 		# p = p[0] + [p[1]]
@@ -138,6 +154,9 @@ def genhisp(procs):
 				code += ",\n"
 			if l[0] == "ret":
 				code += "	ret %s,\n" % l[1]
+			if l[0] == "assign":
+				# print(">>> A", n)
+				code += "    set " + l[1] + " " + l[2] + "\n"
 		code = code[:-1] + ";\n"
 	return code[1:]
 
@@ -145,9 +164,9 @@ def gen_write_hisp(filename: str, of: str = None):
 	with open(filename, "rt") as f:
 		src = f.read()
 
-	parse(src)
+	prod = parse(src)
 
-	code = genhisp(procs)
+	code = genhisp(procs, prod)
 
 	with open(of or os.path.splitext(filename)[0] + ".hsp", "wt") as f:
 		f.write(code)

@@ -1,8 +1,10 @@
 format multiboot
 
 
+video: u8<> = 0xb8000 # now you can assign %
+%                     % globals to sth!    #
+
 fn main() {
-	/* printf("Hello, World!\nArguments number: %d\n", argc) */
-	/* return 0 */
-	leave
+	video[0] = 'X'
+	leave # comment #
 }

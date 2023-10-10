@@ -3,17 +3,20 @@ root: rline*;
 rline: def_format
      | def_import
      | def_func
+     | def_var
+     | def_def
+     | comment
      ;
 
 def_format: "format" name;
 def_import: "import" string;
 def_func: "fn" name lparn (def_def (comma def_def)*)? rparn (arrow type)? lparf line* rparf;
-
 def_def: name colon type;
+def_var: def_def equal expr;
 
 type: name (lpara int? rpara)?;
 
-line: call | ret | liv | comment;
+line: assign | call | ret | liv | def_var | comment;
 
 liv: "leave";
 
@@ -21,12 +24,19 @@ call: name lparn (expr (comma expr)*)? rparn;
 
 ret: "return" expr;
 
-expr: int | string | name | ellipse | call;
+assign: getv equal expr;
+
+getv: name geti?;
+
+geti: lparb int rparb;
+
+expr: int | char | string | name | ellipse | call;
 
 terminals
 
-comment: /\/\*.*\*\//;
-string: /('[^\n'\\]*(?:\\.[^\n'\\]*)*'|"[^\n"\\]*(?:\\.[^\n"\\]*)*")/;
+comment: /\#[^#]*\#/;
+char: /\'(\w|\\(\d{3}|x[A-Za-z0-9]{2}|u|[A-Za-z0-9]{4}|\"|\\\'))\'/;
+string: /"[^\n"\\]*(?:\\.[^\n"\\]*)*"/;
 int: /[+-]?(0[Xx][A-Za-z0-9][A-Za-z0-9_]*|\d+|1[01]*[Bb]|0[Bb]|0[xX][0-9a-fA-F]+)/;
 name: /[A-Za-z_]\w*/;
 ellipse: '...';

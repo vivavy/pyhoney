@@ -18,31 +18,31 @@ def detect_format(i):
     return hnyir.data["format"]
 
 #  format is a function makes file ready for use
-def f_auto(i, o, no_stdlib, full_log, name, rt):
+def f_auto(i, o, no_stdlib, full_log, name, module, rt):
 
     hnyir.gen_write_hisp(i, name + ".hl")
     hisp.hisp_to_c(name + ".hl", no_stdlib)
 
     c = comp_detector.detect_compiler()
     os.system(c + " -Werror -Wall -Wextra -Wno-unused-value -O3 -o " + \
-        (o or os.path.splitext(name)[0]) + " " + name + ".c")
+        (o or module) + " " + name + ".c")
 
     if rt:
         os.system("rm " + name + ".hl")
         os.system("rm " + name + ".c")
 
-def f_multiboot(i, o, no_stdlib, full_log, name, rt):
+def f_multiboot(i, o, no_stdlib, full_log, name, module, rt):
 
     hnyir.gen_write_hisp(i, name + ".hl")
     hisp.hisp_to_c(name + ".hl", no_stdlib)
 
     c = detect_c_compiler.detect_compiler_base("i686-elf-gcc", (9, 16))
-    os.system(c + " -c -Werror -Wall -Wextra -Wno-unused-value -O2 -ffreestanding -o " + \
+    os.system(c + " -c -Werror -Wall -Wextra -Wno-unused-value -Wno-int-conversion -O2 -ffreestanding -o " + \
         name + ".o" + " " + name + ".c")
 
-    # building trampoline
+    # linuking with trampoline
     os.system(c + " -T lds/multiboot.ld -ffreestanding -O2 -nostdlib -o " + \
-        (o or (os.path.splitext(name)[0] + ".elf")) + " objects/multiboot.o " + \
+        (o or (module + ".elf")) + " objects/multiboot.o " + \
         name + ".o")
 
     if rt:
@@ -78,11 +78,12 @@ module_name = os.path.splitext(args.FILE)[0]
 
 name_hash = hex(hash(hash(module_name) + 1))[2:]
 
-module_name += "." + name_hash  # vivavy: we need it for security: 
-                                # if there was not mangling, file names could conflict,
-                                # and it can cause a lot of problems.
+# module_name += "." + name_hash  # vivavy: we need it for security: 
+#                                 # if there was not mangling, file names could conflict,
+#                                 # and it can cause a lot of problems.
 
 # detect_format return 0 if all is fine, any non-zero value otherwise
 form = args.format or detect_format(args.FILE)
 
-forms[form](args.FILE, args.output, args.no_stdlib, args.full_log, module_name, not args.save_temps)
+forms[form](args.FILE, args.output, args.no_stdlib,
+    args.full_log, name_hash, module_name, not args.save_temps)

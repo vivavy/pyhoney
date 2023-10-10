@@ -39,6 +39,7 @@ types = {
 
 procs = {}
 prots = {}
+globs = {}
 
 
 c_predefined = """
@@ -52,10 +53,22 @@ def parse(code):
 	actions = {
 		"proc": proc,
 		"type": typ,
-		"line": line
+		"line": line,
+		"def_def": def_def,
+		"def_var": def_var,
+		'getv': lambda _, n: n[0]+(f"[{n[1][1]}]" if n[1] else ""),
+		'assign': lambda _, n: ["assign", n[0], n[2]]
 	}
 	return Parser(grammar=Grammar.from_file("grammar/hisp.glr"),
 				  actions=actions).parse(code)
+
+
+def def_def(_, n):
+	globs[n[2]] = "%s %s;" % (n[1], n[2])
+
+def def_var(_, n):
+	# print(n)
+	globs[n[2]] = "%s %s = %s;" % (n[1], n[2], n[3])
 
 
 def proc(_, n):
@@ -82,6 +95,8 @@ def line(_, n):
 		return "    "+n[1]+"("+", ".join(tuple(n[2]))+");\n"
 	if n[0] == "ret":
 		return "    return %s;\n" % n[1]
+	if n[0] == "set":
+		return "    " + n[1] + " = " + n[2] + ";\n"
 
 
 def hisp_to_c(filename: str, no_stdlib: bool = False):
@@ -98,7 +113,11 @@ def hisp_to_c(filename: str, no_stdlib: bool = False):
 
 		code += c_predefined
 
+		code += "\n".join(tuple(globs.values())) + "\n" * 2
+
 		code += "\n".join(tuple(prots.values())) + "\n" * 3 + "\n".join(tuple(procs.values()))
+
+		code = code.strip() + "\n"
 
 		f.write(code)
 
