@@ -1,19 +1,14 @@
+# real working multiboot kernel #
+
 format multiboot
 
 
-video: u8<> = 0xb8000 as u8<> # moreover, you can cast now! #
-# now you can assign %
-% globals to sth!    #
+# videobuffer #
+video: u8<> = 0xb8000 as u8<>
 
-fn main() {
-	video[0] = 'X'
-	halt()
-	leave # comment #
-}
 
-fn halt() {
-	# ever loop #
-	forever {
-		ignore(0)
-	}
+# main function #
+fn main(argc: int, argv: str<>) -> int {
+	video[0] = 'X' # proof of work #
+	leave # bootloader hangs automatically after kernel return #
 }

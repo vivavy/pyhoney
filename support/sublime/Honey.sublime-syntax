@@ -21,6 +21,9 @@ contexts:
       scope: punctuation.definition.comment.honey
       push: comment
 
+    - match: '\b(auto|multiboot|mbr|kex|(hxe|efi|dll|so|elf|exe)(16|32|64)?|true|false|null)\b'
+      scope: constant.language.honey
+
     - match: '[A-Za-z_]\w*(?=\()'
       scope: entity.name.function
 
@@ -32,11 +35,14 @@ contexts:
     # strings in YAML. When using single quoted strings, only single quotes
     # need to be escaped: this is done by using two single quotes next to each
     # other.
-    - match: '\b(fn|forever|format|leave|return)\b'
+    - match: '\b(fn|forever|format|leave|return|as)\b'
       scope: keyword.control.honey
 
+    - match: \b(int|uint|[ui](8|16|32|64)|str)\b
+      scope: support.type.honey
+
     # Numbers
-    - match: '\b(-)?[0-9.]+\b'
+    - match: '[+-]?(0[Xx][A-Za-z0-9][A-Za-z0-9_]*|\d+|1[01]*[Bb]|0[Bb]|0[xX][0-9a-fA-F]+)'
       scope: constant.numeric.honey
 
   double_quoted_string:

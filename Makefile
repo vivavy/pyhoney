@@ -10,9 +10,9 @@ main:
 install:
 	@mkdir -p /usr/share/$(NAME) /usr/share/$(NAME)/grammar \
 		  /usr/share/$(NAME)/objects /usr/share/$(NAME)/lds \
-		  $(HOME)/.config/sublime-text/Packages
+		  ~/.config/sublime-text/Packages
 	@cp *.py /usr/share/$(NAME)
-	@cp support/sublime/* $(HOME)/.config/sublime-text/Packages
+	@cp support/sublime/Honey.sublime-syntax ~/.config/sublime-text/Packages/Honey.sublime-syntax
 	@rm /usr/share/$(NAME)/update.py
 	@cp grammar/*.glr /usr/share/$(NAME)/grammar
 	@cp lds/*.ld /usr/share/$(NAME)/lds
@@ -27,6 +27,7 @@ uninstall: remove
 remove:
 	@rm -rf /usr/share/$(NAME)
 	@rm -f /bin/hny
+	@rm -f ~/.config/sublime-text/Honey.sublime-syntax
 	@echo
 	@echo Done
 	@echo

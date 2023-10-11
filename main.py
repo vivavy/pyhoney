@@ -18,7 +18,7 @@ def detect_format(i):
     return hnyir.data["format"]
 
 #  format is a function makes file ready for use
-def f_auto(i, o, no_stdlib, full_log, name, module, rt):
+def f_auto(i, o, no_stdlib, full_log, name, module, rt, cf):
 
     hnyir.gen_write_hisp(i, name + ".hl")
     hisp.hisp_to_c(name + ".hl", no_stdlib)
@@ -34,7 +34,7 @@ def f_auto(i, o, no_stdlib, full_log, name, module, rt):
         os.system("rm " + name + ".hl")
         os.system("rm " + name + ".c")
 
-def f_multiboot(i, o, no_stdlib, full_log, name, module, rt):
+def f_multiboot(i, o, no_stdlib, full_log, name, module, rt, cf):
 
     hnyir.gen_write_hisp(i, name + ".hl")
     hisp.hisp_to_c(name + ".hl", no_stdlib)
@@ -46,12 +46,12 @@ def f_multiboot(i, o, no_stdlib, full_log, name, module, rt):
               "ub.com/lordmilko/i686-elf-tools/r"
               "eleases/tag/7.1.0")
         exit(-1)
-    os.system(c + " -c -Werror -Wall -Wextra -Wno-unused-value " + \
+    os.system(c + " -c -Werror -Wall -Wextra -Wno-unused-value " + cf + " " + \
         "-Wno-return-type -O3 -ffreestanding -o " + \
         name + ".o" + " " + name + ".c")
 
     # linuking with trampoline
-    os.system(c + " -T lds/multiboot.ld -ffreestanding -O3 -nostdlib -o " + \
+    os.system(c + " -T lds/multiboot.ld -ffreestanding -O3 -nostdlib " + cf + " -o " + \
         (o or (module + ".elf")) + " objects/multiboot.o " + \
         name + ".o")
 
@@ -74,6 +74,7 @@ argparser = argparse.ArgumentParser("hny")
 argparser.add_argument("--no-stdlib", action="store_true", dest="no_stdlib")
 argparser.add_argument("--full-log", action="store_true", dest="full_log")
 argparser.add_argument("--save-temps", action="store_true", dest="save_temps")
+argparser.add_argument("--c-flags", dest="c_flags")
 argparser.add_argument("-f", dest="format")
 argparser.add_argument("-o", dest="output")
 argparser.add_argument("FILE")
@@ -96,4 +97,4 @@ name_hash = hex(hash(hash(module_name) + 1))[2:]
 form = args.format or detect_format(args.FILE)
 
 forms[form](args.FILE, args.output, args.no_stdlib,
-    args.full_log, name_hash, module_name, not args.save_temps)
+    args.full_log, name_hash, module_name, not args.save_temps, args.c_flags or "")

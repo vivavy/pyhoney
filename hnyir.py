@@ -75,8 +75,9 @@ def pargs(n):
 
 
 def arg(n):
-	m = n[0]
-	t = typ(n[2])
+	# print(">>> D", n)
+	m = n[2]
+	t = typ(n[1])
 	return [t, m]
 
 

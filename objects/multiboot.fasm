@@ -3,16 +3,11 @@ format elf
 extrn main
 public _start
 
-section ".multiboot_header"
+section ".multiboot"
 
-@@:
-    dd 0xE85250D6
+    dd 0x1badb002
     dd 0
-    dd @f-@b
-    dd 0x100000000 - (0xE85250D6 + @f - @b)
-    dd 0
-    dd 8
-@@:
+    dd -0x1badb002
 
 section '.text' executable
 
