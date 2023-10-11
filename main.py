@@ -24,6 +24,9 @@ def f_auto(i, o, no_stdlib, full_log, name, module, rt):
     hisp.hisp_to_c(name + ".hl", no_stdlib)
 
     c = comp_detector.detect_compiler()
+    if not c:
+        print("Please, install C language compiler (gcc or clang)!")
+        exit(-1)
     os.system(c + " -Werror -Wall -Wextra -Wno-unused-value -O3 -o " + \
         (o or module) + " " + name + ".c")
 
@@ -37,6 +40,12 @@ def f_multiboot(i, o, no_stdlib, full_log, name, module, rt):
     hisp.hisp_to_c(name + ".hl", no_stdlib)
 
     c = detect_c_compiler.detect_compiler_base("i686-elf-gcc", (9, 16))
+    if not c:
+        print("Please, install i686 elf tools!\n"
+              "You can get it here: https://gith"
+              "ub.com/lordmilko/i686-elf-tools/r"
+              "eleases/tag/7.1.0")
+        exit(-1)
     os.system(c + " -c -Werror -Wall -Wextra -Wno-unused-value -O3 -ffreestanding -o " + \
         name + ".o" + " " + name + ".c")
 

@@ -71,7 +71,27 @@ globs = {}
 
 c_predefined = """
 
+#define hny$cast$int(a) ((int)a)
+#define hny$cast$u8(a) ((unsigned char)a)
+#define hny$cast$i8(a) ((signed char)a)
+#define hny$cast$u16(a) ((unsigned short)a)
+#define hny$cast$i16(a) ((signed short)a)
+#define hny$cast$u32(a) ((unsigned long)a)
+#define hny$cast$i32(a) ((signed long)a)
+#define hny$cast$u64(a) ((unsigned long long)a)
+#define hny$cast$i64(a) ((signed long long)a)
+#define hny$cast$char(a) ((char)a)
+#define hny$cast$intptr(a) ((int *)a)
 #define hny$cast$u8ptr(a) ((unsigned char *)a)
+#define hny$cast$i8ptr(a) ((signed char *)a)
+#define hny$cast$u16ptr(a) ((unsigned short *)a)
+#define hny$cast$i16ptr(a) ((signed short *)a)
+#define hny$cast$u32ptr(a) ((unsigned long *)a)
+#define hny$cast$i32ptr(a) ((signed long *)a)
+#define hny$cast$u64ptr(a) ((unsigned long long *)a)
+#define hny$cast$i64ptr(a) ((signed long long *)a)
+#define hny$cast$charptr(a) ((char *)a)
+#define hny$cast$charptrptr(a) ((char **)a)
 
 void ignore(void *data) {data;}
 
