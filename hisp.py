@@ -28,7 +28,7 @@ types = {
 	"<> u16": "unsigned short *",
 	"<> i16": "signed short *",
 	"<> u32": "unsigned long *",
-	"<> i32": "signed long",
+	"<> i32": "signed long *",
 	"<> u64": "unsigned long long *",
 	"<> i64": "signed long long *",
 	"<> uint": "unsigned int *",
@@ -37,12 +37,61 @@ types = {
 	"<> str": "char **",
 }
 
+typec = {
+	"int ": "int",
+	"unsigned char ": "u8",
+	"signed char ": "i8",
+	"unsigned short ": "u16",
+	"signed short ": "i16",
+	"unsigned long ": "u32",
+	"signed long ": "i32",
+	"unsigned long long ": "u64",
+	"signed long long ": "i64",
+	"unsigned int ": "uint",
+	"char ": "char",
+	"char *": "charptr",
+	"unsigned char *": "u8ptr",
+	"signed char *": "i8ptr",
+	"unsigned short *": "u16ptr",
+	"signed short *": "i16ptr",
+	"unsigned long *": "u32ptr",
+	"signed long *": "i32ptr",
+	"unsigned long long *": "u64ptr",
+	"signed long long *": "i64ptr",
+	"unsigned int *": "uintptr",
+	"signed int *": "intptr",
+	"char *": "charptr",
+	"char **": "charptrptr",
+}
+
 procs = {}
 prots = {}
 globs = {}
 
 
 c_predefined = """
+
+#define hny$cast$int(a) ((int)a)
+#define hny$cast$u8(a) ((unsigned char)a)
+#define hny$cast$i8(a) ((signed char)a)
+#define hny$cast$u16(a) ((unsigned short)a)
+#define hny$cast$i16(a) ((signed short)a)
+#define hny$cast$u32(a) ((unsigned long)a)
+#define hny$cast$i32(a) ((signed long)a)
+#define hny$cast$u64(a) ((unsigned long long)a)
+#define hny$cast$i64(a) ((signed long long)a)
+#define hny$cast$char(a) ((char)a)
+#define hny$cast$intptr(a) ((int *)a)
+#define hny$cast$u8ptr(a) ((unsigned char *)a)
+#define hny$cast$i8ptr(a) ((signed char *)a)
+#define hny$cast$u16ptr(a) ((unsigned short *)a)
+#define hny$cast$i16ptr(a) ((signed short *)a)
+#define hny$cast$u32ptr(a) ((unsigned long *)a)
+#define hny$cast$i32ptr(a) ((signed long *)a)
+#define hny$cast$u64ptr(a) ((unsigned long long *)a)
+#define hny$cast$i64ptr(a) ((signed long long *)a)
+#define hny$cast$charptr(a) ((char *)a)
+#define hny$cast$charptrptr(a) ((char **)a)
 
 void ignore(void *data) {data;}
 
@@ -57,10 +106,16 @@ def parse(code):
 		"def_def": def_def,
 		"def_var": def_var,
 		'getv': lambda _, n: n[0]+(f"[{n[1][1]}]" if n[1] else ""),
-		'assign': lambda _, n: ["assign", n[0], n[2]]
+		'assign': lambda _, n: ["assign", n[0], n[2]],
+		'castp': castp
 	}
 	return Parser(grammar=Grammar.from_file("grammar/hisp.glr"),
 				  actions=actions).parse(code)
+
+
+def castp(_, n):
+	# print(n)
+	return "hny$cast$" + typec[n[2]] + "(" + n[1] + ")"
 
 
 def def_def(_, n):
@@ -72,6 +127,7 @@ def def_var(_, n):
 
 
 def proc(_, n):
+	# print(">> F", n)
 	rtype = types[n[1]]
 	name = n[2]
 	args = ", ".join((a + b for a, b in zip(n[3], n[5])))
@@ -91,12 +147,17 @@ def typ(_, n):
 
 
 def line(_, n):
+	# print(">>> K", n)
 	if n[0] == "call":
 		return "    "+n[1]+"("+", ".join(tuple(n[2]))+");\n"
 	if n[0] == "ret":
 		return "    return %s;\n" % n[1]
 	if n[0] == "set":
 		return "    " + n[1] + " = " + n[2] + ";\n"
+	if n[0] == "label":
+		return n[1] + ":\n"
+	if n[0] == "jump":
+		return "    goto " + n[1] + ";\n"
 
 
 def hisp_to_c(filename: str, no_stdlib: bool = False):

@@ -1,22 +1,29 @@
-root: rline*;
+root: rline* ;
 
-rline: proc | def_var | def_def;
+rline: proc | def_var | def_def ;
 
-def_var: "var" type name expr;
-def_def: "def" type name;
+def_var: "var" type name expr ;
+def_def: "def" type name ;
 
-getv: name geti?;
+getv: name geti? ;
 
-geti: lparb int rparb;
+geti: lparb int rparb ;
 
 proc: "fn" name name type* comma name* semi
-	line* semi;
+	line* semi ;
 
-type: "<>"? name;
+type: "<>"? name ;
 
-line: "call" name expr* comma | "ret" expr comma | "set" getv expr;
+line: "call" name expr* comma
+	| "ret" expr comma
+	| "set" getv expr comma
+	| "label" name comma
+	| "jump" name comma
+	;
 
-expr: int | char | string | name;
+expr: int | char | string | name | castp ;
+
+castp: "cast" expr type ;
 
 terminals
 

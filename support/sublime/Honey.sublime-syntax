@@ -1,0 +1,70 @@
+%YAML 1.2
+---
+# See http://www.sublimetext.com/docs/syntax.html
+file_extensions:
+  - hny
+  - hni
+scope: source.honey
+contexts:
+  main:
+    # Strings begin and end with quotes, and use backslashes as an escape
+    # character
+    - match: '"'
+      scope: punctuation.definition.string.begin.honey
+      push: double_quoted_string
+    - match: \'
+      scope: punctuation.definition.string.begin.honey
+      push: quoted_string
+
+    # Comments begin with a '//' and finish at the end of the line
+    - match: '#'
+      scope: punctuation.definition.comment.honey
+      push: comment
+
+    - match: '\b(auto|multiboot|mbr|kex|(hxe|efi|dll|so|elf|exe)(16|32|64)?|true|false|null)\b'
+      scope: constant.language.honey
+
+    - match: '[A-Za-z_]\w*(?=\()'
+      scope: entity.name.function.honey
+
+    - match: '\=|\<|\>|\-|\+|\!|\@|\$|\%|\^|\&|\*|\:|\~|\/|\[|\]'
+      scope: keyword.operator.honey
+
+    - match: '\.|\,|\;|\\|\`'
+      scope: punctuation.separator.honey
+
+    # Keywords are if, else for and while.
+    # Note that blackslashes don't need to be escaped within single quoted
+    # strings in YAML. When using single quoted strings, only single quotes
+    # need to be escaped: this is done by using two single quotes next to each
+    # other.
+    - match: '\b(fn|forever|format|leave|return|as)\b'
+      scope: keyword.control.honey
+
+    - match: \b(int|uint|[ui](8|16|32|64)|str)\b
+      scope: support.type.honey
+
+    # Numbers
+    - match: '\b[+-]?(0[Xx][A-Za-z0-9][A-Za-z0-9_]*|\d+|1[01]*[Bb]|0[Bb]|0[xX][0-9a-fA-F]+)\b'
+      scope: constant.numeric.honey
+
+  double_quoted_string:
+    - meta_scope: string.quoted.double.honey
+    - match: '\\.'
+      scope: constant.character.escape.honey
+    - match: '"'
+      scope: punctuation.definition.string.end.honey
+      pop: true
+
+  quoted_string:
+    - meta_scope: string.quoted.double.honey
+    - match: '\\.'
+      scope: constant.character.escape.honey
+    - match: \'
+      scope: punctuation.definition.string.end.honey
+      pop: true
+
+  comment:
+    - meta_scope: comment.line.honey
+    - match: '#'
+      pop: true

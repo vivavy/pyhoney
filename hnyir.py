@@ -1,6 +1,7 @@
 from parglare import Grammar, Parser
 from pprint import pprint, pformat
 import sys
+import random
 import os.path
 
 procs = {}
@@ -39,7 +40,8 @@ def parse(code):
 		'def_def': lambda _, n: ["def", n[2], n[0]],
 		'def_var': lambda _, n: ["var", n[2], n[0]],
 		'getv': lambda _, n: n[0]+(f"[{n[1][1]}]" if n[1] else ""),
-		'assign': lambda _, n: ["assign", n[0], n[2]]
+		'assign': lambda _, n: ["assign", n[0], n[2]],
+		'cast': lambda _, n: "cast " + n[0] + " " + typ(n[2])
 	}
 	return Parser(grammar=Grammar.from_file("grammar/hny.glr"), \
 		actions=actions).parse(code)
@@ -73,24 +75,35 @@ def pargs(n):
 
 
 def arg(n):
-	m = n[0]
-	t = typ(n[2])
+	# print(">>> D", n)
+	m = n[2]
+	t = typ(n[1])
 	return [t, m]
 
 
 def pbody(n):
-	return [line(l) for l in n]
+	rvalue = []
+	for i in n:
+		line(i, rvalue)
+	return rvalue.copy()
 
 
-def line(n):
+def line(n, l):
 	# print(">>> O", n)
 	if n[0] == "call":
-		return call(n[1:])
+		l += [call(n[1:])]
 	elif n == "leave":
-		return ["ret", "0"]
+		l += [["ret", "0"]]
 	elif n[0] == "return":
-		return ["ret", n[1]]
-	return n
+		l += [["ret", n[1]]]
+	elif n[0] == "assign":
+		l += [["assign", n[1], n[2]]]
+	elif n[0] == "forever":  # forever loop is just conditionless jump back ;P
+		p = "l"+hex(hash(random.random()))[2:]
+		l += [["label", p]]
+		for s in n[2]:
+			line(s, l)
+		l += [["jump", p]]
 
 
 def call(n):
@@ -128,7 +141,7 @@ def genhisp(procs, prod):
 		if n[0] == "def":
 			code += "def " + typ(n[1]) + " " + n[2] + "\n"
 		if n[0] == "var":
-			# print(n)
+			# print(">>> H", n)
 			code += "var " + typ(n[2][1]) + " " + n[2][2] + " " + n[1] + "\n"
 
 	for p in tuple(procs.values()):
@@ -156,7 +169,9 @@ def genhisp(procs, prod):
 				code += "	ret %s,\n" % l[1]
 			if l[0] == "assign":
 				# print(">>> A", n)
-				code += "    set " + l[1] + " " + l[2] + "\n"
+				code += "    set " + l[1] + " " + l[2] + ",\n"
+			if l[0] in "label jump".split():
+				code += "    " + " ".join(tuple(l)) + ",\n"
 		code = code[:-1] + ";\n"
 	return code[1:]
 
