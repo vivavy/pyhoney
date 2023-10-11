@@ -12,7 +12,7 @@ import traceback
 # vivavy: formats
 
 # format detection is very simple
-def detect_format(i):
+def detect_format(i: str):
     with open(i, "rt") as f:
         hnyir.parse(f.read())
     return hnyir.data["format"]

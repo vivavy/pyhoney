@@ -168,3 +168,4 @@ cython_debug/
 *.pgt
 *.pyc
 *__pycache__*
+*.hl

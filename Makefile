@@ -13,6 +13,7 @@ install:
 		  ~/.config/sublime-text/Packages
 	@cp *.py /usr/share/$(NAME)
 	@cp support/sublime/Honey.sublime-syntax ~/.config/sublime-text/Packages/Honey.sublime-syntax
+	@cp support/sublime/hny.yaml ~/.config/micro/syntax/
 	@rm /usr/share/$(NAME)/update.py
 	@cp grammar/*.glr /usr/share/$(NAME)/grammar
 	@cp lds/*.ld /usr/share/$(NAME)/lds
