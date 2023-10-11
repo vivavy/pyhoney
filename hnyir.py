@@ -1,6 +1,7 @@
 from parglare import Grammar, Parser
 from pprint import pprint, pformat
 import sys
+import random
 import os.path
 
 procs = {}
@@ -80,18 +81,28 @@ def arg(n):
 
 
 def pbody(n):
-	return [line(l) for l in n]
+	rvalue = []
+	for i in n:
+		line(i, rvalue)
+	return rvalue.copy()
 
 
-def line(n):
-	# print(">>> O", n)
+def line(n, l):
+	print(">>> O", n)
 	if n[0] == "call":
-		return call(n[1:])
+		l += [call(n[1:])]
 	elif n == "leave":
-		return ["ret", "0"]
+		l += [["ret", "0"]]
 	elif n[0] == "return":
-		return ["ret", n[1]]
-	return n
+		l += [["ret", n[1]]]
+	elif n[0] == "assign":
+		l += [["assign", n[1], n[2]]]
+	elif n[0] == "forever":  # forever loop is just conditionless jump back ;P
+		p = "l"+hex(hash(random.random()))[2:]
+		l += [["label", p]]
+		for s in n[2]:
+			line(s, l)
+		l += [["jump", p]]
 
 
 def call(n):
@@ -144,7 +155,7 @@ def genhisp(procs, prod):
 		code += "\nfn %s %s "%(p[2], name)+" ".join(types)+", "
 		code += " ".join(names)+";\n"
 		for l in p[3]:
-			# print(">>> L", l)
+			print(">>> L", l)
 			if not l:
 				continue
 			if l[0] == "call":
@@ -156,8 +167,10 @@ def genhisp(procs, prod):
 			if l[0] == "ret":
 				code += "	ret %s,\n" % l[1]
 			if l[0] == "assign":
-				# print(">>> A", n)
-				code += "    set " + l[1] + " " + l[2] + "\n"
+				print(">>> A", n)
+				code += "    set " + l[1] + " " + l[2] + ",\n"
+			if l[0] in "label jump".split():
+				code += "    " + " ".join(tuple(l)) + ",\n"
 		code = code[:-1] + ";\n"
 	return code[1:]
 

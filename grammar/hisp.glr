@@ -14,7 +14,12 @@ proc: "fn" name name type* comma name* semi
 
 type: "<>"? name ;
 
-line: "call" name expr* comma | "ret" expr comma | "set" getv expr ;
+line: "call" name expr* comma
+	| "ret" expr comma
+	| "set" getv expr comma
+	| "label" name comma
+	| "jump" name comma
+	;
 
 expr: int | char | string | name | castp ;
 

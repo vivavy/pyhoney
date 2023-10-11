@@ -27,7 +27,7 @@ def f_auto(i, o, no_stdlib, full_log, name, module, rt):
     if not c:
         print("Please, install C language compiler (gcc or clang)!")
         exit(-1)
-    os.system(c + " -Werror -Wall -Wextra -Wno-unused-value -O3 -o " + \
+    os.system(c + " -Werror -Wall -Wextra -Wno-unused-value -Wno-return-type -O3 -o " + \
         (o or module) + " " + name + ".c")
 
     if rt:
@@ -46,7 +46,8 @@ def f_multiboot(i, o, no_stdlib, full_log, name, module, rt):
               "ub.com/lordmilko/i686-elf-tools/r"
               "eleases/tag/7.1.0")
         exit(-1)
-    os.system(c + " -c -Werror -Wall -Wextra -Wno-unused-value -O3 -ffreestanding -o " + \
+    os.system(c + " -c -Werror -Wall -Wextra -Wno-unused-value " + \
+        "-Wno-return-type -O3 -ffreestanding -o " + \
         name + ".o" + " " + name + ".c")
 
     # linuking with trampoline
