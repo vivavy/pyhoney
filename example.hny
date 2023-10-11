@@ -4,11 +4,20 @@ format multiboot
 
 
 # videobuffer #
-video: u8<> = 0xb8000 as u8<>
+video: u8[] = 0xb8000 as u8[]
 
 
 # main function #
-fn main(argc: int, argv: str<>) -> int {
+fn main(argc: int, argv: str[]) -> int {
 	video[0] = 'X' # proof of work #
+	# test forever loop #
+	forever {
+		ignore(0)
+		ignore(1)
+		ignore(2)
+	}
 	leave # bootloader hangs automatically after kernel return #
 }
+
+
+

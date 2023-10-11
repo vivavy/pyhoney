@@ -25,10 +25,13 @@ contexts:
       scope: constant.language.honey
 
     - match: '[A-Za-z_]\w*(?=\()'
-      scope: entity.name.function
+      scope: entity.name.function.honey
 
-    - match: '\=|\<|\>|\-|\+|\!|\@|\$|\%|\^|\&|\*|\:|\~|\/'
+    - match: '\=|\<|\>|\-|\+|\!|\@|\$|\%|\^|\&|\*|\:|\~|\/|\[|\]'
       scope: keyword.operator.honey
+
+    - match: '\.|\,|\;|\\|\`'
+      scope: punctuation.separator.honey
 
     # Keywords are if, else for and while.
     # Note that blackslashes don't need to be escaped within single quoted
@@ -42,7 +45,7 @@ contexts:
       scope: support.type.honey
 
     # Numbers
-    - match: '[+-]?(0[Xx][A-Za-z0-9][A-Za-z0-9_]*|\d+|1[01]*[Bb]|0[Bb]|0[xX][0-9a-fA-F]+)'
+    - match: '\b[+-]?(0[Xx][A-Za-z0-9][A-Za-z0-9_]*|\d+|1[01]*[Bb]|0[Bb]|0[xX][0-9a-fA-F]+)\b'
       scope: constant.numeric.honey
 
   double_quoted_string:

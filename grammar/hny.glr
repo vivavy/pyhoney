@@ -14,7 +14,7 @@ def_func: "fn" name lparn (def_def (comma def_def)*)? rparn (arrow type)? lparf 
 def_def: name colon type;
 def_var: def_def equal expr;
 
-type: name (lpara int? rpara)?;
+type: name (lparb int? rparb)?;
 
 line: assign | call | ret | liv | def_var | forever_loop | comment;
 
