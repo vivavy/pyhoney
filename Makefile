@@ -4,6 +4,7 @@ main:
 	@echo "Type \`sudo make install' and \`make apply' for installation \
 (second if it is your first installation) or \`sudo make uninstall' for uninstallation"
 	@echo "For update, type \`sudo make update'"
+	@echo "For same version fix, type \`sudo make patch'"
 	@exit
 
 install:
@@ -27,6 +28,9 @@ remove:
 	@echo
 	@echo Done
 	@echo
+
+patch: reinstall
+	@printf ""
 
 reinstall: remove install
 	@printf ""
