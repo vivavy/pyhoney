@@ -39,7 +39,8 @@ def parse(code):
 		'def_def': lambda _, n: ["def", n[2], n[0]],
 		'def_var': lambda _, n: ["var", n[2], n[0]],
 		'getv': lambda _, n: n[0]+(f"[{n[1][1]}]" if n[1] else ""),
-		'assign': lambda _, n: ["assign", n[0], n[2]]
+		'assign': lambda _, n: ["assign", n[0], n[2]],
+		'cast': lambda _, n: "cast " + n[0] + " " + typ(n[2])
 	}
 	return Parser(grammar=Grammar.from_file("grammar/hny.glr"), \
 		actions=actions).parse(code)
@@ -128,7 +129,7 @@ def genhisp(procs, prod):
 		if n[0] == "def":
 			code += "def " + typ(n[1]) + " " + n[2] + "\n"
 		if n[0] == "var":
-			# print(n)
+			# print(">>> H", n)
 			code += "var " + typ(n[2][1]) + " " + n[2][2] + " " + n[1] + "\n"
 
 	for p in tuple(procs.values()):

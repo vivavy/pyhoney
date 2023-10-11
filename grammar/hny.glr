@@ -22,6 +22,8 @@ liv: "leave";
 
 call: name lparn (expr (comma expr)*)? rparn;
 
+cast: expr "as" type;
+
 ret: "return" expr;
 
 assign: getv equal expr;
@@ -30,7 +32,7 @@ getv: name geti?;
 
 geti: lparb int rparb;
 
-expr: int | char | string | name | ellipse | call;
+expr: int | char | string | name | ellipse | call | cast;
 
 terminals
 

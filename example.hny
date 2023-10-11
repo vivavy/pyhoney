@@ -1,8 +1,9 @@
 format multiboot
 
 
-video: u8<> = 0xb8000 # now you can assign %
-%                     % globals to sth!    #
+video: u8<> = 0xb8000 as u8<> # moreover, you can cast now! #
+# now you can assign %
+% globals to sth!    #
 
 fn main() {
 	video[0] = 'X'

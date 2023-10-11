@@ -28,7 +28,7 @@ types = {
 	"<> u16": "unsigned short *",
 	"<> i16": "signed short *",
 	"<> u32": "unsigned long *",
-	"<> i32": "signed long",
+	"<> i32": "signed long *",
 	"<> u64": "unsigned long long *",
 	"<> i64": "signed long long *",
 	"<> uint": "unsigned int *",
@@ -37,12 +37,41 @@ types = {
 	"<> str": "char **",
 }
 
+typec = {
+	"int ": "int",
+	"unsigned char ": "u8",
+	"signed char ": "i8",
+	"unsigned short ": "u16",
+	"signed short ": "i16",
+	"unsigned long ": "u32",
+	"signed long ": "i32",
+	"unsigned long long ": "u64",
+	"signed long long ": "i64",
+	"unsigned int ": "uint",
+	"char ": "char",
+	"char *": "charptr",
+	"unsigned char *": "u8ptr",
+	"signed char *": "i8ptr",
+	"unsigned short *": "u16ptr",
+	"signed short *": "i16ptr",
+	"unsigned long *": "u32ptr",
+	"signed long *": "i32ptr",
+	"unsigned long long *": "u64ptr",
+	"signed long long *": "i64ptr",
+	"unsigned int *": "uintptr",
+	"signed int *": "intptr",
+	"char *": "charptr",
+	"char **": "charptrptr",
+}
+
 procs = {}
 prots = {}
 globs = {}
 
 
 c_predefined = """
+
+#define hny$cast$u8ptr(a) ((unsigned char *)a)
 
 void ignore(void *data) {data;}
 
@@ -57,10 +86,16 @@ def parse(code):
 		"def_def": def_def,
 		"def_var": def_var,
 		'getv': lambda _, n: n[0]+(f"[{n[1][1]}]" if n[1] else ""),
-		'assign': lambda _, n: ["assign", n[0], n[2]]
+		'assign': lambda _, n: ["assign", n[0], n[2]],
+		'castp': castp
 	}
 	return Parser(grammar=Grammar.from_file("grammar/hisp.glr"),
 				  actions=actions).parse(code)
+
+
+def castp(_, n):
+	# print(n)
+	return "hny$cast$" + typec[n[2]] + "(" + n[1] + ")"
 
 
 def def_def(_, n):

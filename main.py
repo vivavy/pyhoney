@@ -37,11 +37,11 @@ def f_multiboot(i, o, no_stdlib, full_log, name, module, rt):
     hisp.hisp_to_c(name + ".hl", no_stdlib)
 
     c = detect_c_compiler.detect_compiler_base("i686-elf-gcc", (9, 16))
-    os.system(c + " -c -Werror -Wall -Wextra -Wno-unused-value -Wno-int-conversion -O2 -ffreestanding -o " + \
+    os.system(c + " -c -Werror -Wall -Wextra -Wno-unused-value -O3 -ffreestanding -o " + \
         name + ".o" + " " + name + ".c")
 
     # linuking with trampoline
-    os.system(c + " -T lds/multiboot.ld -ffreestanding -O2 -nostdlib -o " + \
+    os.system(c + " -T lds/multiboot.ld -ffreestanding -O3 -nostdlib -o " + \
         (o or (module + ".elf")) + " objects/multiboot.o " + \
         name + ".o")
 
