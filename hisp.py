@@ -127,7 +127,7 @@ def def_var(_, n):
 
 
 def proc(_, n):
-	print(">> F", n)
+	# print(">> F", n)
 	rtype = types[n[1]]
 	name = n[2]
 	args = ", ".join((a + b for a, b in zip(n[3], n[5])))
@@ -147,7 +147,7 @@ def typ(_, n):
 
 
 def line(_, n):
-	print(">>> K", n)
+	# print(">>> K", n)
 	if n[0] == "call":
 		return "    "+n[1]+"("+", ".join(tuple(n[2]))+");\n"
 	if n[0] == "ret":

@@ -9,8 +9,10 @@ main:
 
 install:
 	@mkdir -p /usr/share/$(NAME) /usr/share/$(NAME)/grammar \
-		  /usr/share/$(NAME)/objects /usr/share/$(NAME)/lds
+		  /usr/share/$(NAME)/objects /usr/share/$(NAME)/lds \
+		  $(HOME)/.config/sublime-text/Packages
 	@cp *.py /usr/share/$(NAME)
+	@cp support/sublime/* $(HOME)/.config/sublime-text/Packages
 	@rm /usr/share/$(NAME)/update.py
 	@cp grammar/*.glr /usr/share/$(NAME)/grammar
 	@cp lds/*.ld /usr/share/$(NAME)/lds

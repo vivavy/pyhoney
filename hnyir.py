@@ -88,7 +88,7 @@ def pbody(n):
 
 
 def line(n, l):
-	print(">>> O", n)
+	# print(">>> O", n)
 	if n[0] == "call":
 		l += [call(n[1:])]
 	elif n == "leave":
@@ -155,7 +155,7 @@ def genhisp(procs, prod):
 		code += "\nfn %s %s "%(p[2], name)+" ".join(types)+", "
 		code += " ".join(names)+";\n"
 		for l in p[3]:
-			print(">>> L", l)
+			# print(">>> L", l)
 			if not l:
 				continue
 			if l[0] == "call":
@@ -167,7 +167,7 @@ def genhisp(procs, prod):
 			if l[0] == "ret":
 				code += "	ret %s,\n" % l[1]
 			if l[0] == "assign":
-				print(">>> A", n)
+				# print(">>> A", n)
 				code += "    set " + l[1] + " " + l[2] + ",\n"
 			if l[0] in "label jump".split():
 				code += "    " + " ".join(tuple(l)) + ",\n"
