@@ -94,12 +94,22 @@ c_predefined = """
 #define hny$cast$charptrptr(a) ((char **)a)
 #define __$call
 
+int hny$internal$strlen(char *c_str) {
+	int i;
+	for (i = 0; c_str[i]; i++) {}
+	return i;
+}
+
 void ignore(void *data) {data;}
 
 typedef struct {
 	int len;
 	char *c_str;
 } str;
+
+str method$str$$new$charptr(char *c_str) {
+	return (str){hny$internal$strlen(c_str), c_str};
+}
 
 """
 
@@ -117,7 +127,7 @@ def parse(code):
 		'assign': lambda _, n: ["assign", n[0], n[2]],
 		'castp': castp,
 		'calle': line_1,
-		'string': lambda _, n: "(str)"+n,
+		'string': lambda _, n: "method$str$$new$charptr("+n+")",
 		'line': [
 			ret,
 			line_2,

@@ -15,7 +15,7 @@ fn print(text: str) -> char {
 
 # main function #
 fn main(argc: int, argv: str[]) -> int {
-	video[0] = print("ratata") # proof of work #
+	video[0] = print("ratata") as char # proof of work #
 	# test forever loop #
 	forever {}
 	leave # bootloader hangs automatically after kernel return #
