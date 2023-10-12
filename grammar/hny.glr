@@ -18,7 +18,7 @@ type: name (lparb int? rparb)?;
 
 line: assign | call | ret | liv | def_var | forever_loop | comment;
 
-forever_loop: "forever" lparf line* rparf;
+forever_loop: "for" lparf line* rparf;
 
 liv: "leave";
 
