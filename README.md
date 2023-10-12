@@ -8,7 +8,7 @@ sudo make install
 
 if it is your first install of Honey, execute:
 ```bash
-sudo make apply
+make apply
 ```
 
 Dependencies:
