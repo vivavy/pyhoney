@@ -1,0 +1,1 @@
+rm -f *.hl *.c *.o *.elf *.out

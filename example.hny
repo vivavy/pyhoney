@@ -4,20 +4,20 @@ format multiboot
 
 
 # videobuffer #
-video: u8[] = 0xb8000 as u8[]
+video: char[] = 0xb8000 as char[]
+
+vga_cursor: int = 0
+
+
+fn print(text: str) -> char {
+	return 'A'
+}
 
 
 # main function #
 fn main(argc: int, argv: str[]) -> int {
-	video[0] = 'X' # proof of work #
+	video[0] = print("ratata") # proof of work #
 	# test forever loop #
-	forever {
-		ignore(0)
-		ignore(1)
-		ignore(2)
-	}
+	forever {}
 	leave # bootloader hangs automatically after kernel return #
 }
-
-
-

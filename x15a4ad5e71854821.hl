@@ -1,0 +1,11 @@
+var <>char video cast 0xb8000 <>char
+var int vga_cursor 0
+
+fn char print str, text;
+	ret 'A',;
+
+fn int main int, argc;
+    set video[0] call callp r i n t,
+    label l1e48f2793b74e100,
+    jump l1e48f2793b74e100,
+	ret 0,;

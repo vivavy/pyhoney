@@ -22,7 +22,7 @@ types = {
 	"uint": "unsigned int ",
 	"int": "int ",
 	"char": "char ",
-	"str": "char *",
+	"str": "str ",
 	"<> u8": "unsigned char *",
 	"<> i8": "signed char *",
 	"<> u16": "unsigned short *",
@@ -34,7 +34,7 @@ types = {
 	"<> uint": "unsigned int *",
 	"<> int": "int *",
 	"<> char": "char *",
-	"<> str": "char **",
+	"<> str": "str *",
 }
 
 typec = {
@@ -92,10 +92,18 @@ c_predefined = """
 #define hny$cast$i64ptr(a) ((signed long long *)a)
 #define hny$cast$charptr(a) ((char *)a)
 #define hny$cast$charptrptr(a) ((char **)a)
+#define __$call
 
 void ignore(void *data) {data;}
 
+typedef struct {
+	int len;
+	char *c_str;
+} str;
+
 """
+
+db = False
 
 
 def parse(code):
@@ -114,7 +122,8 @@ def parse(code):
 
 
 def castp(_, n):
-	# print(n)
+	if db:
+		print("[*] hisp:", n, "hny$cast$" + typec[n[2]] + "(" + n[1] + ")")
 	return "hny$cast$" + typec[n[2]] + "(" + n[1] + ")"
 
 
@@ -147,7 +156,8 @@ def typ(_, n):
 
 
 def line(_, n):
-	# print(">>> K", n)
+	if db:
+		print("[*] hisp:", n)
 	if n[0] == "call":
 		return "    "+n[1]+"("+", ".join(tuple(n[2]))+");\n"
 	if n[0] == "ret":
@@ -160,11 +170,16 @@ def line(_, n):
 		return "    goto " + n[1] + ";\n"
 
 
-def hisp_to_c(filename: str, no_stdlib: bool = False):
+def hisp_to_c(filename: str, no_stdlib: bool = False, _db: bool = False):
+	global db;db = _db
 	with open(filename, "rt") as f:
 		src = f.read()
 
 	prod = parse(src)
+
+	if db:
+		print("[*] hisp:", end=" ")
+		pprint(prod)
 
 	with open(os.path.splitext(filename)[0] + ".c", "wt") as f:
 		code = ""
