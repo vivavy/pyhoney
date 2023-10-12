@@ -32,40 +32,69 @@ globs = {
 
 def parse(code):
 	actions = {
+		'root': root,
 		'def_func': lambda _, n: proc(n),
 		'call': pcall,
-		'import': lambda _, n: ['import', eval(n[1])],
-		'comment': lambda _, n: ['comment', n],
+		'import': lambda _, n: 'import ' + eval(n[1]),
+		'comment': lambda _, n: '',
 		'def_format': formatp,
-		'def_def': lambda _, n: ["def", n[2], n[0]],
-		'def_var': lambda _, n: ["var", n[2], n[0]],
-		'getv': lambda _, n: n[0]+(f"[{n[1][1]}]" if n[1] else ""),
-		'assign': lambda _, n: ["assign", n[0], n[2]],
+		'def_var': lambda _, n: "var " + n[0].split(None, 1)[1] + " " + n[2],
+		'getv': lambda _, n: n[0]+n[1],
+		'assign': lambda _, n: "set " + n[0] + " " + n[2],
+		'ret': lambda _, n: "    ret %s" % n[1],
 		'cast': castp,
+		'geti': lambda _, n: '[%s]' % n[1],
+		'liv': lambda _, n: '    ret 0',
+		'for_loop': forl,
+		'forever_loop': forevl,
+		'line': lambda _, n: n[0],
+		'type': typ,
+		'def_def': lambda _, n: "def " + n[2] + " " + n[0],
+		'range': lambda _, n: "range " + n[0] + " " + n[2],
 		'expr': [
 			lambda _, n: n[0],
 			lambda _, n: n[0],
 			lambda _, n: n[0],
 			lambda _, n: n[0],
 			lambda _, n: n[0],
+			lambda _, n: n[0],
 			ecall,
-			lambda _, n: n[0]
+			lambda _, n: n[0],
+			lambda _, n: n[0],
+			lambda _, n: n[0] + " " + n[1][0] + " " + n[2],
+			lambda _, n: n[0][0] + n[1],
+			lambda _, n: n[0] + n[1][0]
 		]
 	}
 	return Parser(grammar=Grammar.from_file("grammar/hny.glr"), \
 		actions=actions).parse(code)
 
 
+def root(_, n):
+	n = n[0]
+	print("[*] hny: root:", n)
+	return "\n".join(tuple(n))
+
+
+def forevl(_, n):
+	p = "l"+hex(hash(random.random()))[2:]
+	return "label " + p + "\n" + "\n".join(tuple(n[2])) + "    jump " + p
+
+
+def forl(_, n):
+	return "for %s\n    %s;\n" % (n[1], "\n".join(tuple(n[5])).replace("\n", "\n    "))
+
+
 def castp(_, n):
-	#print(n)
-	return "cast " + n[0] + " " + typ(n[2])
+	print("[*] hny: castp:", n)
+	return "cast " + n[0] + " " + n[2]
 
 
 def formatp(_, n):
 	#if db:
 	#print("[*] hny:", "format =", n[1])
 	data["format"] = n[1]
-	return n
+	return ""
 
 def pcall(_, n):
 	#if db:
@@ -78,52 +107,37 @@ def proc(n):
 	global procs, procs_raw
 	name = n[1]
 	args = pargs(n[3]) if n[3] else []
-	rtyp = n[5][1][0] if n[5] else "int"
-	body = pbody(n[7])
-	procs[name] = (name, args, rtyp, body)
-	return tuple(procs.values())[-1]
+	rtyp = n[5][1] if n[5] else "int"
+	body = ",\n".join(tuple(n[7]))+","
+	print("[*] hny: proc:", "fn " + rtyp + " " + name + " " + \
+	" ".join((i[1] for i in args)) + " " + " ".join((i[0] for i in args)) + "\n" + body + ";")
+	return "fn " + rtyp + " " + name + " " + \
+	" ".join((i[1] for i in args)) + ", " + " ".join((i[0] for i in args)) + ",\n" + body + ";"
 
 
 def pargs(n):
-	#if db:
-	n = [n[0], *n[1][1:]]
+	print("[*] hny: pargs:", n)
+	if n[1]:
+		n = [n[0], *n[1][0]]
+	else:
+		n = [n[0]]
+	print("[*] hny: pargs: 2:", n)
 	while ',' in n:
 		n.remove(',')
-	#print("[*] hny: pargs:", n)
+	print("[*] hny: pargs: 3:", n)
 	return [arg(a) for a in n]
 
 
 def arg(n):
 	#if db:
-	#print("[*] hisp: arg:", n)
-	m = n[2]
-	t = typ(n[1])
+	print("[*] hisp: arg:", n)
+	m = n.split()[2]
+	t = n.split()[1]
 	return [t, m]
 
 
 def pbody(n):
-	rvalue = []
-	for i in n:
-		line(i, rvalue)
-	return rvalue.copy()
-
-
-def line(n, l):
-	#print("[*] hisp: line:", l)
-	if n[0] == "call":
-		l += call(n[1:])
-	elif n == "leave":
-		l += [["ret", "0"]]
-	elif n[0] == "return":
-		l += [["ret", n[1]]]
-	elif n[0] == "assign":
-		l += [["assign", n[1], n[2]]]
-	elif n[0] == "forever":  # forever loop is just conditionless jump back ;P
-		p = "l"+hex(hash(random.random()))[2:]
-		l += [["label", p]]
-		for s in n[2]:
-			line(s, l)
-		l += [["jump", p]]
+	return ",\n".join(tuple(n))+","
 
 
 def call(n):
@@ -135,7 +149,7 @@ def call(n):
 		del n[n.index(',')]
 	# print(">>> B", args)
 	# args = [i[1] for i in args]
-	return ['call', name, args]
+	return 'call ' + name + " " + " ".join(tuple(args)) + ","
 
 
 def ecall(_, n):
@@ -161,7 +175,7 @@ def flat(a):
 	return r.copy()
 
 
-def typ(n):
+def typ(_, n):
 	array = ("","<>")[int(bool(n[1]))]
 	#print("[*] hny: typ:", array+n[0])
 	return array+n[0]
@@ -190,7 +204,7 @@ def genhisp(procs, prod):
 		code += " ".join(names)+";\n"
 		for l in p[3]:
 			#if db:
-			#print("[*] hny:", l)
+			print("[*] hny: genhisp: l:", l)
 			if not l:
 				continue
 			if l[0] == "call":
@@ -211,9 +225,12 @@ def gen_write_hisp(filename: str, of: str = None):
 	with open(filename, "rt") as f:
 		src = f.read()
 
-	prod = parse(src)
+	prod = code = parse(src)
 
-	code = genhisp(procs, prod)
+	print("[*] hny: gen_write_hisp: ", end='')
+	pprint(prod)
+
+	# code = genhisp(procs, prod)
 
 	with open(of or os.path.splitext(filename)[0] + ".hsp", "wt") as f:
-		f.write(code)
+		f.write(code.strip()+"\n")

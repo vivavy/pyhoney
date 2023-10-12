@@ -12,8 +12,8 @@ fn print(text: str) -> char {
 	return 'A'
 }
 
-fn test_loops() {
-	for i: u8 = 0 i < 23 i++ {
+fn show_alphabet() {
+	for i: u8 in 0..23 {
 		video[i] = 'A' + i
 	}
 }
