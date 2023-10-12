@@ -12,6 +12,12 @@ fn print(text: str) -> char {
 	return 'A'
 }
 
+fn test_loops() {
+	for i: u8 = 0 i < 23 i++ {
+		video[i] = 'A' + i
+	}
+}
+
 
 # main function #
 fn main(argc: int, argv: str[]) -> int {
