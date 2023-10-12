@@ -29,8 +29,6 @@ globs = {
 	# name: (type, None) or (type, value)
 }
 
-db = False
-
 
 def parse(code):
 	actions = {
@@ -59,20 +57,20 @@ def parse(code):
 
 
 def castp(_, n):
-	print(n)
+	#print(n)
 	return "cast " + n[0] + " " + typ(n[2])
 
 
 def formatp(_, n):
-	if db:
-		print("[*] hny:", "format =", n[1])
+	#if db:
+	#print("[*] hny:", "format =", n[1])
 	data["format"] = n[1]
 	return n
 
 def pcall(_, n):
 	#if db:
 	args = [n[2][0], *n[2][1]]
-	print("[*] hny:", "call", "call " + n[0] + "(" + ", ".join(tuple(args)) + ")")
+	#print("[*] hny:", "call", "call " + n[0] + "(" + ", ".join(tuple(args)) + ")")
 	return ["call", n[0], args]
 
 
@@ -91,13 +89,13 @@ def pargs(n):
 	n = [n[0], *n[1][1:]]
 	while ',' in n:
 		n.remove(',')
-	print("[*] hny: pargs:", n)
+	#print("[*] hny: pargs:", n)
 	return [arg(a) for a in n]
 
 
 def arg(n):
 	#if db:
-	print("[*] hisp: arg:", n)
+	#print("[*] hisp: arg:", n)
 	m = n[2]
 	t = typ(n[1])
 	return [t, m]
@@ -111,7 +109,7 @@ def pbody(n):
 
 
 def line(n, l):
-	print("[*] hisp: line:", l)
+	#print("[*] hisp: line:", l)
 	if n[0] == "call":
 		l += call(n[1:])
 	elif n == "leave":
@@ -129,7 +127,7 @@ def line(n, l):
 
 
 def call(n):
-	print("[*] hny: call:", n)
+	#print("[*] hny: call:", n)
 	name = n[0]
 	args = n[1] or []
 	args = flat(args)
@@ -141,7 +139,7 @@ def call(n):
 
 
 def ecall(_, n):
-	print("[*] hny: ecall:", n)
+	#print("[*] hny: ecall:", n)
 	n = n[0]
 	name = n[1]
 	args = n[2] or []
@@ -165,7 +163,7 @@ def flat(a):
 
 def typ(n):
 	array = ("","<>")[int(bool(n[1]))]
-	# print("[*]", array+n[0])
+	#print("[*] hny: typ:", array+n[0])
 	return array+n[0]
 
 
@@ -180,8 +178,8 @@ def genhisp(procs, prod):
 			code += "var " + typ(n[2][1]) + " " + n[2][2] + " " + n[1] + "\n"
 
 	for p in tuple(procs.values()):
-		if db:
-			print("[*] hny:", p)
+		#if db:
+		#print("[*] hny:", p)
 		name = p[0]
 		types = (i[0] for i in p[1])
 		names = (i[1] for i in p[1])
@@ -191,8 +189,8 @@ def genhisp(procs, prod):
 		code += "\nfn %s %s "%(p[2], name)+" ".join(types)+", "
 		code += " ".join(names)+";\n"
 		for l in p[3]:
-			if db:
-				print("[*] hny:", l)
+			#if db:
+			#print("[*] hny:", l)
 			if not l:
 				continue
 			if l[0] == "call":
@@ -209,8 +207,7 @@ def genhisp(procs, prod):
 		code = code[:-1] + ";\n"
 	return code[1:]
 
-def gen_write_hisp(filename: str, of: str = None, _db: bool = False):
-	global db;db = _db
+def gen_write_hisp(filename: str, of: str = None):
 	with open(filename, "rt") as f:
 		src = f.read()
 

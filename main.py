@@ -18,10 +18,10 @@ def detect_format(i: str):
     return hnyir.data["format"]
 
 #  format is a function makes file ready for use
-def f_auto(i, o, no_stdlib, full_log, name, module, rt, cf, db):
+def f_auto(i, o, no_stdlib, full_log, name, module, rt, cf):
 
-    hnyir.gen_write_hisp(i, name + ".hl", _db=db)
-    hisp.hisp_to_c(name + ".hl", no_stdlib, _db=db)
+    hnyir.gen_write_hisp(i, name + ".hl")
+    hisp.hisp_to_c(name + ".hl", no_stdlib)
 
     c = comp_detector.detect_compiler()
     if not c:
@@ -34,10 +34,10 @@ def f_auto(i, o, no_stdlib, full_log, name, module, rt, cf, db):
         os.system("rm " + name + ".hl")
         os.system("rm " + name + ".c")
 
-def f_multiboot(i, o, no_stdlib, full_log, name, module, rt, cf, db):
+def f_multiboot(i, o, no_stdlib, full_log, name, module, rt, cf):
 
-    hnyir.gen_write_hisp(i, name + ".hl", _db=db)
-    hisp.hisp_to_c(name + ".hl", no_stdlib, _db=db)
+    hnyir.gen_write_hisp(i, name + ".hl")
+    hisp.hisp_to_c(name + ".hl", no_stdlib)
 
     c = detect_c_compiler.detect_compiler_base("i686-elf-gcc", (9, 16))
     if not c:
@@ -72,7 +72,6 @@ forms = {
 argparser = argparse.ArgumentParser("hny")
 
 argparser.add_argument("--no-stdlib", action="store_true", dest="no_stdlib")
-argparser.add_argument("--debug", action="store_true", dest="debug_mode")
 argparser.add_argument("--full-log", action="store_true", dest="full_log")
 argparser.add_argument("--save-temps", action="store_true", dest="save_temps")
 argparser.add_argument("--c-flags", dest="c_flags")
@@ -98,4 +97,4 @@ name_hash = hex(hash(hash(module_name) + 1))[2:]
 form = args.format or detect_format(args.FILE)
 
 forms[form](args.FILE, args.output, args.no_stdlib,
-    args.full_log, name_hash, module_name, not args.save_temps, args.c_flags or "", args.debug_mode)
+    args.full_log, name_hash, module_name, not args.save_temps, args.c_flags or "")

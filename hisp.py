@@ -110,10 +110,11 @@ typedef struct {
 str method$str$$new$charptr(char *c_str) {
 	return (str){hny$internal$strlen(c_str), c_str};
 }
+int method$str$$length(str self) {
+	return self.len;
+}
 
 """
-
-db = False
 
 
 def parse(code):
@@ -141,23 +142,23 @@ def parse(code):
 
 
 def line_1(_, n):
-	print("[*] hisp: line_1:", n)
+	#print("[*] hisp: line_1:", n)
 	return n[1] + "(" + ", ".join(tuple(n[2])) + ")"
 
 
 def ret(_, n):
-	print("[*] hisp: ret:", n)
+	#print("[*] hisp: ret:", n)
 	return "    return " + n[1] + ";"
 
 
 def line_2(_, n):
-	print("[*] hisp: line_2:", n)
+	#print("[*] hisp: line_2:", n)
 	return "    " + n[1] + " = " + n[2] + ";"
 
 
 def castp(_, n):
-	if db:
-		print("[*] hisp:", n, "hny$cast$" + typec[n[2]] + "(" + n[1] + ")")
+	#if db:
+	#print("[*] hisp:", n, "hny$cast$" + typec[n[2]] + "(" + n[1] + ")")
 	return "hny$cast$" + typec[n[2]] + "(" + n[1] + ")"
 
 
@@ -170,7 +171,7 @@ def def_var(_, n):
 
 
 def proc(_, n):
-	print("[*] hisp: proc:", n)
+	#print("[*] hisp: proc:", n)
 	rtype = types[n[1]]
 	name = n[2]
 	args = ", ".join((a + b for a, b in zip(n[3], n[5])))
@@ -190,8 +191,8 @@ def typ(_, n):
 
 
 def line(_, n):
-	if db:
-		print("[*] hisp:", n)
+	#if db:
+	#print("[*] hisp:", n)
 	if n[0] == "call":
 		return "    "+n[1]+"("+", ".join(tuple(n[2]))+");\n"
 	if n[0] == "ret":
@@ -204,16 +205,15 @@ def line(_, n):
 		return "    goto " + n[1] + ";\n"
 
 
-def hisp_to_c(filename: str, no_stdlib: bool = False, _db: bool = False):
-	global db;db = _db
+def hisp_to_c(filename: str, no_stdlib: bool = False):
 	with open(filename, "rt") as f:
 		src = f.read()
 
 	prod = parse(src)
 
-	if db:
-		print("[*] hisp:", end=" ")
-		pprint(prod)
+	#if db:
+	#print("[*] hisp:", end=" ")
+	#pprint(prod)
 
 	with open(os.path.splitext(filename)[0] + ".c", "wt") as f:
 		code = ""
