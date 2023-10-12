@@ -2,7 +2,6 @@
 
 format multiboot
 
-
 # videobuffer #
 video: char[] = 0xb8000 as char[]
 

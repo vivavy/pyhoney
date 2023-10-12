@@ -1,0 +1,43 @@
+filetype: hny
+
+detect:
+    filename: "\\.hny$"
+
+rules:
+      # Reserved words
+    - statement: "\\b(format|fn|forever|leave|as)\\b"
+      # Constants
+    - green: "\\b[A-Z][A-Z_0-9]+\\b"
+      # Numbers
+    - constant.number: "\\b[0-9]+\\b"
+    - constant.number: "\\b0[Xx]([0-9a-fA-F]+)\\b"
+    - constant.number: "\\b0[Oo]([0-7]+)\\b"
+    - constant.number: "\\b0[Bb]([01]+)\\b"
+      # Booleans
+    - constant: "\\b(true|false)\\b"
+    - type: "\\b[a-zA-Z_0-9]+\\_t\\b"
+      # Builtin types that start with lowercase.
+    - type: "\\b(bool|string|isize|usize|((i|u)(8|16|32|64))|float|int|str)\\b"
+
+    - lightgreen: "\\-\\>"
+
+    - constant.string:
+        start: "\""
+        end: "\""
+        skip: '\\.'
+        rules:
+            - constant.specialChar: '\\.'
+
+    - comment:
+        start: "#"
+        end: "#"
+        rules:
+            - todo: "(TODO|XXX|FIXME):?"
+
+    - constant.string:
+            start: "'"
+            end: "'"
+            skip: "\\\\."
+            rules:
+                - constant.specialChar: "\\\\([\"'abfnrtv\\\\]|[0-3]?[0-7]{1,2}|x[0-9A-Fa-f]{1,2}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})"
+    
