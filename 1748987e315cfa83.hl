@@ -5,7 +5,7 @@ fn char print str, text;
 	ret 'A',;
 
 fn int main int, argc;
-    set video[0] call callp r i n t,
-    label l1e48f2793b74e100,
-    jump l1e48f2793b74e100,
+    set video[0] call print "ratata",,
+    label lb08bb98eb584100,
+    jump lb08bb98eb584100,
 	ret 0,;

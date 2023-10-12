@@ -141,16 +141,16 @@ def call(n):
 
 
 def ecall(_, n):
-	print("[*] hny: call:", n)
+	print("[*] hny: ecall:", n)
 	n = n[0]
-	name = n[0]
-	args = n[1] or []
+	name = n[1]
+	args = n[2] or []
 	args = flat(args)
 	while ',' in n:
 		del n[n.index(',')]
 	# print(">>> B", args)
 	# args = [i[1] for i in args]
-	return 'call ' + name + " ".join(tuple(args))
+	return 'call ' + name + " " + " ".join(tuple(args)) + ","
 
 def flat(a):
 	r = []

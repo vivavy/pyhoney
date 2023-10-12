@@ -115,10 +115,34 @@ def parse(code):
 		"def_var": def_var,
 		'getv': lambda _, n: n[0]+(f"[{n[1][1]}]" if n[1] else ""),
 		'assign': lambda _, n: ["assign", n[0], n[2]],
-		'castp': castp
+		'castp': castp,
+		'calle': line_1,
+		'string': lambda _, n: "(str)"+n,
+		'line': [
+			ret,
+			line_2,
+			lambda _, n: n[1] + ":",
+			lambda _, n: "    goto " + n[1] + ";",
+			lambda _, n: "    " + n[0] + ";"
+		]
 	}
 	return Parser(grammar=Grammar.from_file("grammar/hisp.glr"),
 				  actions=actions).parse(code)
+
+
+def line_1(_, n):
+	print("[*] hisp: line_1:", n)
+	return n[1] + "(" + ", ".join(tuple(n[2])) + ")"
+
+
+def ret(_, n):
+	print("[*] hisp: ret:", n)
+	return "    return " + n[1] + ";"
+
+
+def line_2(_, n):
+	print("[*] hisp: line_2:", n)
+	return "    " + n[1] + " = " + n[2] + ";"
 
 
 def castp(_, n):
@@ -136,12 +160,12 @@ def def_var(_, n):
 
 
 def proc(_, n):
-	# print(">> F", n)
+	print("[*] hisp: proc:", n)
 	rtype = types[n[1]]
 	name = n[2]
 	args = ", ".join((a + b for a, b in zip(n[3], n[5])))
-	body = "".join(n[7])
-	code = "%s%s(%s) {\n%s};\n" % (rtype, name, args, body)
+	body = "\n".join(n[7])
+	code = "%s%s(%s) {\n%s\n};\n" % (rtype, name, args, body)
 	code = code.replace("{\n}", "{}")
 	procs[name] = code
 	prots[name] = code.split(" {")[0]+";"
