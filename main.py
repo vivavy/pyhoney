@@ -3,36 +3,31 @@
 import os
 import hny
 import argparse
-import traceback
 
 
 #  format is a function makes file ready for use
-def f_auto(i, o, no_stdlib, full_log, name, module, rt, cf):
-
+def f_auto(i, o, _no_stdlib, _full_log, name, _module, rt, cf):
     hny.gen(i, name + ".fasm")
 
     os.system("fasm " + name + ".fasm " + cf)
 
     # linking
-    os.system("ld " + name + ".o")
+    os.system("ld -o" + o + " " + name + ".o")
 
     if rt:
         os.system("rm " + name + ".fasm")
         os.system("rm " + name + ".o")
 
 
-def f_multiboot(i, o, no_stdlib, full_log, name, module, rt, cf):
-
+def f_multiboot(i, o, _no_stdlib, _full_log, name, module, rt, cf):
     hny.gen(i, name + ".fasm")
-
-    return
 
     os.system("fasm " + name + ".fasm " + cf)
 
     # linking with trampoline
-    os.system("i686-elf-gcc -T lds/multiboot.ld -ffreestanding -O3 -nostdlib " + cf + " -o " + \
-        (o or (module + ".elf")) + " objects/multiboot.o " + \
-        name + ".o")
+    os.system("i686-elf-gcc -T lds/multiboot.ld -ffreestanding -O3 -nostdlib " + cf + " -o " +
+              (o or (module + ".elf")) + " objects/multiboot.o " +
+              name + ".o")
 
     if rt:
         os.system("rm " + name + ".fasm")
@@ -62,4 +57,4 @@ name_hash = hex(hash(module_name))[2:]
 form = args.format or hny.get_format(args.FILE)
 
 forms[form](args.FILE, args.output, args.no_stdlib,
-    args.full_log, name_hash, module_name, not args.save_temps, args.c_flags or "")
+            args.full_log, name_hash, module_name, not args.save_temps, args.c_flags or "")

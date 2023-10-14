@@ -59,7 +59,7 @@ def f_getv(_, n):
 
 
 def f_ret(_, n):
-    return Line(_, n[1], None, Base.ret)
+    return Expr(_, n[1], None, Base.ret)
 
 
 def f_call(_, n):
@@ -114,12 +114,13 @@ def f_format(_, n):
 
 
 def f_root(_, n):
-    return ("\n\n".join(tuple(str(i) for i in n))) \
-               .replace("}, ", "}\n\n") \
-               .replace(", format", "\n\nformat") \
-               .replace(", Line", "\n\nLine") \
-               .replace(", Expr", "\n\nExpr") \
-               .replace(", fn", "\n\nfn")[1:][:-1]
+    return n[0]
+    # return ("\n\n".join(tuple(str(i) for i in n))) \
+    #            .replace("}, ", "}\n\n") \
+    #            .replace(", format", "\n\nFormat") \
+    #            .replace(", Line", "\n\nLine") \
+    #            .replace(", Expr", "\n\nExpr") \
+    #            .replace(", fn", "\n\nfn")[1:][:-1]
 
 
 def f_comment(_, n):

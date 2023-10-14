@@ -1,7 +1,6 @@
-from pprint import pprint
-
 from parglare import Grammar, Parser
 from parser.hny.funcs import *
+from analyze import check
 
 data = {
     "format": "auto"
@@ -46,24 +45,20 @@ def parse(code):
     return Parser(grammar=Grammar.from_file("grammar/hny.glr"), actions=actions).parse(code)
 
 
-def gen(filename: str, of: str):
+def gen(filename: str, _of: str):
     with open(filename, "rt") as f:
         src = f.read()
 
     prod = parse(src)
 
-    print(prod)
+    check(prod, src)
 
-    return
-
-    check(prod)
-
-    code = generate(prod)
+    # code = generate(prod)
 
     # code = genhisp(procs, prod)
 
-    with open(of, "wt") as f:
-        f.write(code.strip() + "\n")
+    # with open(of, "wt") as f:
+        # f.write(code.strip() + "\n")
 
 
 def get_format(filename: str):
@@ -72,10 +67,10 @@ def get_format(filename: str):
 
     prod = parse(src)
 
-    format = 'auto'
+    form = 'auto'
 
     for n in prod:
         if Format == type(n):
-            format = n.module.value
+            form = n.module.value
 
-    return format
+    return form

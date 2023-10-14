@@ -72,12 +72,23 @@ class Type:
         self.data = data
         self.array = array
 
+    def as_literal(self):
+        if self.array:
+            return Base.integer
+        if self.base in "u8 i8 u16 i16 u32 i32 u64 i64 int uint char wchar".split():
+            return Base.integer
+        if self.base in "str wstr bytes words".split():
+            return Base.string
+
     def __str__(self):
         return Base.tps[self.base] + ("*" if self.array else "")
 
+    def __eq__(self, other):
+        return self.base == other.base and self.array == other.array
+
 
 class Expr:
-    def __init__(self, node, op1: Symbol_t | Expr_t, op2: Symbol_t | Expr_t | None, op: int):
+    def __init__(self, node, op1, op2, op: int):
         self.node = node
         self.op = op
         self.a = self.op1 = self.x = op1
@@ -123,10 +134,10 @@ class Func:
 
     @overload
     def __str__(self):
-        return str(self.rtype) + " " + str(self.name) + "(" + \
-            ", ".join(tuple(
-                " ".join(zip(self.argtypes, self.argnames)))) + " {\n    " + \
-            "\n    ".join(tuple(str(i) for i in self.body)) + "\n}"
+        # print("[*] parser: Func.__repr__:", self.argnames, self.argtypes)
+        return "%s %s(%s) {\n    %s\n}" % (str(self.rtype), self.name.value,
+                                           self.strargs(),
+                                           ("\n".join(tuple(str(i) for i in self.body))).replace("\n", "\n\t"))
 
     @overload
     def __repr__(self):
