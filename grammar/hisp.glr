@@ -7,7 +7,7 @@ def_def: "def" type name ;
 
 getv: name geti? ;
 
-geti: lparb int rparb ;
+geti: lparb expr rparb ;
 
 proc: "fn" name name type* comma name* semi
 	line* semi ;
@@ -19,9 +19,14 @@ line: "ret" expr comma
 	| "label" name comma
 	| "jump" name comma
 	| expr comma
+	| forinl comma
 	;
 
-expr: int | char | string | name | castp | calle ;
+forinl: "forin" "def" type name expr line* semi ;
+
+expr: int | char | string | name | castp | calle | ranger ;
+
+ranger: "range" int int ;
 
 castp: "cast" expr type ;
 

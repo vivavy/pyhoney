@@ -128,38 +128,46 @@ def parse(code):
 		'assign': lambda _, n: ["assign", n[0], n[2]],
 		'castp': castp,
 		'calle': line_1,
-		'string': lambda _, n: "method$str$$new$charptr("+n+")",
+		'forinl': for_in,
+		'string': lambda _, n: n,  # "method$str$$new$charptr("+n+")",
 		'line': [
 			ret,
 			line_2,
 			lambda _, n: n[1] + ":",
-			lambda _, n: "    goto " + n[1] + ";",
-			lambda _, n: "    " + n[0] + ";"
+			lambda _, n: "    jmp " + n[1],
+			lambda _, n: "    " + n[0] + ";",
+			lambda _, n: n[0]
 		]
 	}
 	return Parser(grammar=Grammar.from_file("grammar/hisp.glr"),
 				  actions=actions).parse(code)
 
 
+def for_in(_, n):
+	return "    " + n[0] + "\n    ".join(n[5] or ())
+
+
 def line_1(_, n):
 	#print("[*] hisp: line_1:", n)
-	return n[1] + "(" + ", ".join(tuple(n[2])) + ")"
+	n[2].reverse()
+	return "    push $WORD " + "\n    push $WORD ".join(tuple(n[2])) + \
+		"\n    call " + n[1]
 
 
 def ret(_, n):
 	#print("[*] hisp: ret:", n)
-	return "    return " + n[1] + ";"
+	return "    mov $eax, %s\n    ret " % n[1]
 
 
 def line_2(_, n):
 	#print("[*] hisp: line_2:", n)
-	return "    " + n[1] + " = " + n[2] + ";"
+	return "    mov $eax, " + n[2] + "\n    mov " + n[1] + ", $eax"
 
 
 def castp(_, n):
 	#if db:
 	#print("[*] hisp:", n, "hny$cast$" + typec[n[2]] + "(" + n[1] + ")")
-	return "hny$cast$" + typec[n[2]] + "(" + n[1] + ")"
+	return n[1]  # "hny$cast$" + typec[n[2]] + "(" + n[1] + ")"
 
 
 def def_def(_, n):
@@ -177,10 +185,10 @@ def proc(_, n):
 	args = ", ".join((a + b for a, b in zip(n[3], n[5])))
 	body = "\n".join(n[7])
 	code = "%s%s(%s) {\n%s\n};\n" % (rtype, name, args, body)
-	code = code.replace("{\n}", "{}")
+	code = code.replace("{\n\n}", "{}")
 	procs[name] = code
 	prots[name] = code.split(" {")[0]+";"
-	return code
+	return name + ":\n    push $ebp\n    mov $ebp, $esp\n    " + "\n    ".join(n[7])
 
 
 def typ(_, n):
