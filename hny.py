@@ -49,6 +49,10 @@ def gen(filename: str, _of: str):
     with open(filename, "rt") as f:
         src = f.read()
 
+    if not src:
+        print("Error: empty source")
+        sys.exit(-2)
+
     prod = parse(src)
 
     check(prod, src)

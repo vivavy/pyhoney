@@ -1,3 +1,5 @@
+from pprint import pformat
+
 from parser.hny.types import *
 from analyzer.hny.consts import *
 from parglare.parser import LRStackNode
@@ -10,34 +12,38 @@ __all__ = ["check"]
 def warn(text, node: LRStackNode, src):
     startsym = node.start_position
     lineno = len(src[:startsym].split("\n")) - 1
-    line = src.split("\n")[lineno]
-    pos = startsym - len("\n".join(src.split("\n")[:lineno]))
-    length = node.end_position - node.start_position
-    print("Warning at line %d\n%s\n    %s" % (lineno, text, line), file=sys.stderr)
-    print("    " + " " * pos + "~" * length, file=sys.stderr)
+    line: str = src.split("\n")[lineno]
+    linepos = len("\n".join(src.split("\n")[:lineno]))
+    pos = startsym - linepos - 3
+    # length = node.end_position - node.start_position
+    print("\nWarning at line %d: %s\n│   %s" % (lineno + 1, text, line.lstrip()), file=sys.stderr)
+    print("│   " + " " * pos + "▲", file=sys.stderr)
+    print("╰───" + "─" * pos + "╯\n", file=sys.stderr)
 
 
 # noinspection DuplicatedCode
 def err(text, node: LRStackNode, src):
     startsym = node.start_position
     lineno = len(src[:startsym].split("\n")) - 1
-    line = src.split("\n")[lineno]
-    pos = startsym - len(src[:startsym][::1].split("\n", 1)[0]) + 1
-    length = node.end_position - node.start_position
-    print("Error at line %d\n%s\n\t%s" % (lineno + 1, text, line), file=sys.stderr)
-    print("\t" + " " * pos + "~" * length, file=sys.stderr)
+    line: str = src.split("\n")[lineno]
+    linepos = len("\n".join(src.split("\n")[:lineno]))
+    pos = startsym - linepos - 3
+    # length = node.end_position - node.start_position
+    print("\nError at line %d: %s\n│   %s" % (lineno + 1, text, line.lstrip()), file=sys.stderr)
+    print("│   " + " " * pos + "▲", file=sys.stderr)
+    print("╰───" + "─" * pos + "╯\n", file=sys.stderr)
     sys.exit(2)
 
 
 def check(prod, src):
-    analyzer = Analyzer(prod)
+    analyzer = Analyzer(prod, src)
 
-    status = analyzer.check(src=src)
+    status = analyzer.check()
 
     if status:
         err(*status, src)  # i can't invent sth better
 
-    # P.S.: it was a lie. I just invented a cool method without weird functions, but i too lazy to imlement it
+    # P.S.: it was a lie. I just invented a cool method without weird functions, but I too lazy to imlement it
 
     return
 
@@ -52,35 +58,58 @@ class Stack(list):
 
 
 class Frame:
-    def __init__(self, fname, globs, src):
+    def __init__(self, fname, globf, src):
         self.fn = fname
         self.locals = {}
-        self.globals = globs
+        self.global_frame = globf
         self.src = src
 
-    def add_local(self, definition, typ=None):
-        if typ:
-            self.locals[definition.value] = typ
-        self.locals[definition.a] = definition.b
+    def add_global(self, *a, **k):
+        return self.global_frame.add_local(*a, **k)
 
-    def is_present(self, name):
-        return name in self.locals or name in self.globals
+    def add_local(self, definition, typ=None):
+        print("[*] analyzer: add_local:", definition)
+        if typ:
+            self.locals[definition.value if isinstance(definition, Symbol) else definition] = typ
+        if isinstance(definition.a.value, Symbol):
+            # noinspection PyUnresolvedReferences
+            definition.b.value = Type(definition.b.value.value, {}, False).as_literal()
+        self.locals[definition.a.value] = Type(definition.b.base
+                                               if isinstance(definition.b, Type) else definition.b.value, {},
+                                               definition.b.array if isinstance(definition.b, Type) else False)
+
+    def is_present(self, node):
+        return node.value in self.locals or (self.global_frame.is_present(node.value) if self.global_frame else False)
+
+    def check_present(self, node):
+        try:
+            assert node.value in self.locals or \
+                   (self.global_frame.is_present(node.value) if self.global_frame else False)
+        except AssertionError:
+            self.panic(node, self.src)
 
     def check(self, d):
         try:
             return self.locals[d.a] == d.b
         except KeyError:
             try:
-                return self.globals[d.a] == d.b
+                return self.global_frame.check(d)
             except KeyError:
-                err("variable name used before reference", d.node, self.src)
+                self.panic(d, self.src)
+            except AttributeError:
+                self.panic(d, self.src)
+
+    def panic(self, d, src):
+        err("variable name used before reference\nLocals: %s\nGlobals: %s" %
+            (pformat(self.locals).replace("\n", "\n    "),
+             pformat(self.global_frame.locals).replace("\n", "\n    ")), d.node, src)
 
     def get(self, name, node):
         try:
             return self.locals[name]
         except KeyError:
             try:
-                return self.globals[name]
+                return self.global_frame.get(name, node)
             except KeyError:
                 err("variable name used before reference", node, self.src)
 
@@ -88,21 +117,25 @@ class Frame:
 class Analyzer:
     prod: list
     funcs: dict[str, Func]
-    globals: dict[str, Type]
+    globals: Frame
     imports: list[str]
     format: str | None
     frame: Frame | None
+    src: str
 
-    def __init__(self, prod):
+    def __init__(self, prod, src):
         self.prod = prod
         self.funcs = {}
-        self.globals = {}
+        self.global_frame = Frame(None, None, src)
         self.imports = []
         self.format = None
         self.frame = None
+        self.src = src
 
     # check is recursive function
-    def check(self, node: object | None = None, src=""):
+    def check(self, node: object | None = None):
+        src = self.src
+
         if node is None:
             node = self.prod
 
@@ -122,12 +155,12 @@ class Analyzer:
                 print("\tdata saved")
 
                 # save the frame
-                self.frame = Frame(n.name, self.globals, src)
+                self.frame = Frame(n.name, self.global_frame, src)
 
                 print("\tstack saved, checkin' body")
 
                 # and we need to check it recursively
-                status = self.check(n.body, src)
+                status = self.check(n.body)
 
                 if status:
                     return status
@@ -158,10 +191,10 @@ class Analyzer:
                         if isinstance(n.a.a, Symbol):
                             # suppression because linter got mad
                             # noinspection PyUnresolvedReferences
-                            self.globals[n.a.a.value] = n.a.b
+                            self.global_frame.add_local(n.a)
 
                             # checkin' expression
-                            status = self.check(n.b, src)
+                            status = self.check(n.b)
 
                             if status:
                                 return status
@@ -175,7 +208,7 @@ class Analyzer:
                             # Suppression because linter got mad.
                             # This needed for a linter, always true
                             if isinstance(n.b, Type):
-                                self.globals[n.a.value] = n.b
+                                self.global_frame.add_local(n)
                         else:
                             return "assigning to non-constant lvalue out of function", n.node
                     else:
@@ -189,13 +222,14 @@ class Analyzer:
                         self.frame.add_local(n.a.a)
 
                         # check the body
-                        status = self.check(n.b.lines, src)
+                        status = self.check(n.b.lines)
 
                         if status:
                             return status
 
                     if n.op == Base.assign:  # Defining or assigning? Easy, b×tch!
                         print("\tassignment found:", n)
+                        # noinspection PyUnresolvedReferences
                         if self.frame.is_present(n.a.a.value):
                             if self.frame.check(n.a):
                                 warn("variable already defined", n.node, src)  # i can't invent sth better
@@ -219,8 +253,9 @@ class Analyzer:
                         if isinstance(n.a, Symbol):
                             if n.a.type == Base.name:
                                 # it is a symbol
-                                if self.frame.is_present(n.a.value):
-                                    return "variable name used before reference", n.node
+                                self.frame.check(Expr(n.a, n.a.value,
+                                                      Type(self.funcs[self.frame.fn].rtype.as_literal(),
+                                                           {}, False), Base.define))
                                 if self.frame.get(n.a.value, n.a) != self.funcs[self.frame.fn].rtype.as_literal():
                                     return "return type don't match", n.node
                             # it is a literal
@@ -229,7 +264,7 @@ class Analyzer:
                                 return "return type don't match", n.a.node
                         else:
                             if n.a.op == Base.call:
-                                self.check(n.a, src)
+                                self.check(n.a)
                                 if n.a.a.value in self.funcs:
                                     if self.funcs[n.a.a.value].rtype.as_literal() != \
                                             self.funcs[self.frame.fn].rtype.as_literal():
@@ -239,7 +274,7 @@ class Analyzer:
                             if n.a.op == Base.ret:
                                 return "nested returns not allowed, did you mean `leave'?", n.node
                             if Base.plus <= n.a.op <= Base.incs or n.a.op == Base.cast:
-                                self.check(n.a, src)
+                                self.check(n.a)
                                 if n.a.a.type != self.funcs[self.frame.fn].rtype.as_literal():
                                     return "return type don't match", n.node
 

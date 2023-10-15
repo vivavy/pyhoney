@@ -1,5 +1,3 @@
-import sys
-
 from sugar import *
 
 Symbol_t = Expr_t = object
@@ -18,7 +16,6 @@ class Base:
     array = 4
     void = 5
     type = 6
-
 
     plus = 0
     minus = 1
@@ -69,10 +66,13 @@ class FuncData(Data):
 
 
 class Type:
-    def __init__(self, base: int, data: Data | dict, array=False):
+    def __init__(self, base, data: Data | dict, array=False):
         self.base = base
         self.data = data
         self.array = array
+
+        if isinstance(self.base, Symbol):
+            self.base = self.base.value
 
     def as_literal(self) -> int:
         if self.array:
@@ -84,6 +84,9 @@ class Type:
 
     def __str__(self):
         return Base.tps[self.base] + ("*" if self.array else "")
+
+    def __repr__(self):
+        return Base.tps[self.as_literal()] + ("*" if self.array else "")
 
     def __eq__(self, other):
         return self.base == other.base and self.array == other.array
