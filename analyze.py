@@ -1,16 +1,31 @@
 from parser.hny.types import *
 from analyzer.hny.consts import *
+from parglare.parser import LRStackNode
 import sys
 
 __all__ = ["check"]
 
 
-def warn(text, node, src):
-    print("Warning:", text, file=sys.stderr)
+# noinspection DuplicatedCode
+def warn(text, node: LRStackNode, src):
+    startsym = node.start_position
+    lineno = len(src[:startsym].split("\n")) - 1
+    line = src.split("\n")[lineno]
+    pos = startsym - len("\n".join(src.split("\n")[:lineno]))
+    length = node.end_position - node.start_position
+    print("Warning at line %d\n%s\n    %s" % (lineno, text, line), file=sys.stderr)
+    print("    " + " " * pos + "~" * length, file=sys.stderr)
 
 
-def err(text, node, src):
-    print("Error:", text, file=sys.stderr)
+# noinspection DuplicatedCode
+def err(text, node: LRStackNode, src):
+    startsym = node.start_position
+    lineno = len(src[:startsym].split("\n")) - 1
+    line = src.split("\n")[lineno]
+    pos = startsym - len(src[:startsym][::1].split("\n", 1)[0]) + 1
+    length = node.end_position - node.start_position
+    print("Error at line %d\n%s\n\t%s" % (lineno + 1, text, line), file=sys.stderr)
+    print("\t" + " " * pos + "~" * length, file=sys.stderr)
     sys.exit(2)
 
 
@@ -36,114 +51,196 @@ class Stack(list):
         return self[-1 - i]
 
 
+class Frame:
+    def __init__(self, fname, globs, src):
+        self.fn = fname
+        self.locals = {}
+        self.globals = globs
+        self.src = src
+
+    def add_local(self, definition, typ=None):
+        if typ:
+            self.locals[definition.value] = typ
+        self.locals[definition.a] = definition.b
+
+    def is_present(self, name):
+        return name in self.locals or name in self.globals
+
+    def check(self, d):
+        try:
+            return self.locals[d.a] == d.b
+        except KeyError:
+            try:
+                return self.globals[d.a] == d.b
+            except KeyError:
+                err("variable name used before reference", d.node, self.src)
+
+    def get(self, name, node):
+        try:
+            return self.locals[name]
+        except KeyError:
+            try:
+                return self.globals[name]
+            except KeyError:
+                err("variable name used before reference", node, self.src)
+
+
 class Analyzer:
+    prod: list
+    funcs: dict[str, Func]
+    globals: dict[str, Type]
+    imports: list[str]
+    format: str | None
+    frame: Frame | None
+
     def __init__(self, prod):
         self.prod = prod
         self.funcs = {}
-        self.globals = []
+        self.globals = {}
         self.imports = []
         self.format = None
-        self.frames = Stack()
+        self.frame = None
 
     # check is recursive function
-    def check(self, node: list | Func | Expr | Format | Line | Import | None = None, src=""):
-        n: list | Func | Expr | Format | Line | Import
+    def check(self, node: object | None = None, src=""):
         if node is None:
             node = self.prod
 
-        print("[*] Analyzer.check:", node)
+        # print("[*] Analyzer.check:", node)
 
-        try:
-            # noinspection PyUnboundLocalVariable
-            node[0]
-        except TypeError:
+        if not isinstance(node, list):
             return
 
         for n in node:
-            print("[*] Analyzer.check:", n)
             if Func == type(n):
-                if n.name in list(self.funcs.keys()):
-                    return ("function already defined", n.node,
-                            self.funcs[n.name].node)  # compiler will handle it by selfs
+                print("[*] analyzer: func found:", n)
+                if n.name in self.funcs:
+                    # compiler will handle it by self
+                    return "function already defined", n.node, self.funcs[n.name].node
 
                 self.funcs[n.name] = n  # so we saved data about function
+                print("\tdata saved")
 
-                # save the frame (`push' makes possible nested functions,
-                # but for now they are not supported)
-                self.frames.push({"vars": {}, "fname": n.name})
+                # save the frame
+                self.frame = Frame(n.name, self.globals, src)
+
+                print("\tstack saved, checkin' body")
 
                 # and we need to check it recursively
-                for c in n.body:
-                    status = self.check(c, src)
+                status = self.check(n.body, src)
 
-                    if status:
-                        return status
+                if status:
+                    return status
 
-                self.frames.pop()
+                self.frame = None  # clear frame
 
-            if Line == type(n):
+            # is it a comment?
+            if isinstance(n, Line):
                 if n.op == Base.ignore:
-                    continue  # it's a comment
+                    print("[%] analyzer: comment found")
+                    continue  # skip
 
             if Format == type(n):
+                print("[*] analyzer: format found:", n.module.value)
                 self.format = formats[n.module.value]
 
             if Import == type(n):
+                print("[*] analyzer: import found:", n.module.value)
                 self.imports.append(n.module.value)
 
-            if Expr == type(n):
-                if not self.frames:  # if we have not appeared in any context.
+            if isinstance(n, Expr) or isinstance(n, Line):
+                print("[^] analyzer: found evaluatable or executable structure")
+                if not self.frame:  # if we have not appeared in any context.
+                    print("\tframe does not present")
                     if n.op == Base.assign:  # Defining with initialized value? Ok!
+                        print("[*] analyzer: initialized global")
                         # save this value as global variable
                         if isinstance(n.a.a, Symbol):
                             # suppression because linter got mad
                             # noinspection PyUnresolvedReferences
-                            self.globals.append(n.a.a.value)
+                            self.globals[n.a.a.value] = n.a.b
+
+                            # checkin' expression
+                            status = self.check(n.b, src)
+
+                            if status:
+                                return status
+                        else:
+                            return "assigning to non-constant lvalue out of function", n.node
+
+                    elif n.op == Base.define:  # Without? Sure!
+                        print("[*] analyzer: uninitialized global")
+                        # save this value as global variable
+                        if isinstance(n.a, Symbol):
+                            # Suppression because linter got mad.
+                            # This needed for a linter, always true
+                            if isinstance(n.b, Type):
+                                self.globals[n.a.value] = n.b
                         else:
                             return "assigning to non-constant lvalue out of function", n.node
                     else:
                         return "prohibited construction out of function", n.node
+
                 else:  # if we are in any function's context
+                    print("\tframe presents")
+                    if n.op == Base.foreach:
+                        print("[*] analyzer: foreach found: ", n.a)
+                        # noinspection PyTypeChecker
+                        self.frame.add_local(n.a.a)
+
+                        # check the body
+                        status = self.check(n.b.lines, src)
+
+                        if status:
+                            return status
+
                     if n.op == Base.assign:  # Defining or assigning? Easy, b×tch!
-                        if isinstance(n.a, Expr):  # Linter bulls this line without a reason
-                            if n.a.op == Base.define:
-                                if n.a.a.value in self.frames.get():
-                                    if n.a.b == self.frames.get()["vars"]:
-                                        warn("variable already defined", n.node, src)  # i can't invent sth better
-                                    else:
-                                        return "variable already defined with other type", n.node
-                                else:
-                                    self.frames.get()["vars"].append(n.a.b)  # register type of new local
+                        print("\tassignment found:", n)
+                        if self.frame.is_present(n.a.a.value):
+                            if self.frame.check(n.a):
+                                warn("variable already defined", n.node, src)  # i can't invent sth better
+
                             else:
-                                return "unknown error, perhaps bug in parser", n.node  # this situation is impossible
+                                return "variable already defined with other type", n.node
                         else:
-                            return "unknown error, perhaps bug in parser", n.node  # this situation is impossible
+                            self.frame.add_local(n.a)  # register new local
+
+                        if n.a.op == Base.index:
+                            if isinstance(n.a.b, Symbol):
+                                if n.a.b.type == Base.name:
+                                    if self.frame.get(n.a.b.value, n.a.b).as_literal() != Base.integer:
+                                        return "array index must be integer", n.node
+
+                                elif n.a.b.type != Base.integer:
+                                    return "array index must be integer", n.node
+
                     elif n.op == Base.ret:
+                        print("[*] analyzer: return found:", n)
                         if isinstance(n.a, Symbol):
                             if n.a.type == Base.name:
                                 # it is a symbol
-                                if n.a.value not in self.frames.get()["vars"] and n.a.value not in self.globals:
+                                if self.frame.is_present(n.a.value):
                                     return "variable name used before reference", n.node
-                                if self.frames.get()["vars"][n.a.value] != \
-                                        self.funcs[self.frames.get()["fname"]].rtype.as_literal():
+                                if self.frame.get(n.a.value, n.a) != self.funcs[self.frame.fn].rtype.as_literal():
                                     return "return type don't match", n.node
                             # it is a literal
-                            if n.a.type == self.funcs[self.frames.get()["fname"]].rtype.as_literal():
+                            if n.a.type == self.funcs[self.frame.fn].rtype:
                                 # types haven't matched
                                 return "return type don't match", n.a.node
-                        if isinstance(n.a, Expr):
+                        else:
                             if n.a.op == Base.call:
                                 self.check(n.a, src)
-                                if n.a.a in self.funcs:
-                                    if self.funcs[n.a.a.value].rtype != self.funcs[self.frames.get()["fname"]].rtype:
+                                if n.a.a.value in self.funcs:
+                                    if self.funcs[n.a.a.value].rtype.as_literal() != \
+                                            self.funcs[self.frame.fn].rtype.as_literal():
                                         return "return type don't match", n.node
                                 else:  # TODO: make 2-passes analyzer
                                     print("[*] analyzer: can't test for rtype function `" + n.a.a.value + "'")
                             if n.a.op == Base.ret:
-                                return "nested returns are not allowed, perhaps you mean `leave'?", n.node
-                            if Base.plus <= n.a.op <= Base.incs:
+                                return "nested returns not allowed, did you mean `leave'?", n.node
+                            if Base.plus <= n.a.op <= Base.incs or n.a.op == Base.cast:
                                 self.check(n.a, src)
-                                if n.a.a.type.base != self.funcs[self.frames.get()["fname"]].rtype:
+                                if n.a.a.type != self.funcs[self.frame.fn].rtype.as_literal():
                                     return "return type don't match", n.node
 
         return

@@ -41,15 +41,15 @@ def f_binop(_, n):
 
 
 def f_punop(_, n):
-    return Expr(_, n[1], None, Base.ops.index(n[0] + "p"))
+    return Expr(_, n[1], None, Base.ops.index(n[0] + "x"))
 
 
 def f_sunop(_, n):
-    return Expr(_, n[0], None, Base.ops.index(n[1] + "s"))
+    return Expr(_, n[0], None, Base.ops.index("x" + n[1]))
 
 
 def f_geti(_, n):
-    return Symbol(_, "", n[1], Base.integer)
+    return n[1]
 
 
 def f_getv(_, n):

@@ -13,6 +13,7 @@ fn print(text: str) -> char {
 }
 
 fn show_alphabet() {
+    i: u8 = 0
 	for i: u8 in 0..23 {
 		video[i] = 'A' + i
 	}

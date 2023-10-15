@@ -1,3 +1,5 @@
+import sys
+
 from sugar import *
 
 Symbol_t = Expr_t = object
@@ -49,7 +51,7 @@ class Base:
     forever = 28
     ignore = 29
 
-    ops = "+ - * / & @ % ^ | << >> < > -- ++ --p --s ++p ++s <- # =? .. = !! . <? .* >< !@".split()
+    ops = "+ - * / & @ % ^ | << >> < > -- ++ --x x-- ++x x++ ind iter cast rng assign call def ret ech evr ign".split()
     tps = "INT STR SYM CHR ARR NIL TYP".split()
     typs = "int str symbol char array null type".split()
 
@@ -72,7 +74,7 @@ class Type:
         self.data = data
         self.array = array
 
-    def as_literal(self):
+    def as_literal(self) -> int:
         if self.array:
             return Base.integer
         if self.base in "u8 i8 u16 i16 u32 i32 u64 i64 int uint char wchar".split():
@@ -88,6 +90,8 @@ class Type:
 
 
 class Expr:
+    op: int
+
     def __init__(self, node, op1, op2, op: int):
         self.node = node
         self.op = op
@@ -144,13 +148,34 @@ class Func:
         # print("[*] parser: Func.__repr__:", self.argnames, self.argtypes)
         return "%s %s(%s) {\n    %s\n}" % (str(self.rtype), self.name.value,
                                            self.strargs(),
-                                           ("\n".join(tuple(str(i) for i in self.body))).replace("\n", "\n\t"))
+                                           ("\n".join(tuple(str(i) for i in self.body)))
+                                           .replace("\n", "\n\t"))
+
+    def header(self):
+        # print("[*] parser: Func.__repr__:", self.argnames, self.argtypes)
+        return "%s %s(%s)" % (str(self.rtype), self.name.value, self.strargs())
 
     def strargs(self) -> str:
         r = ""
 
         for i in range(len(self.argtypes)):
-            r += str(self.argtypes[i]) + " " + self.argnames[i].value + ", "
+            c = self.argtypes[i]
+
+            if isinstance(c, int):
+                c = Base.tps[c]
+            elif isinstance(c, Symbol):
+                c = c.value
+            elif isinstance(c, Type):
+                c = str(c)
+
+            if isinstance(c, int):
+                c = Base.tps[c]
+            elif isinstance(c, Symbol):
+                c = c.value
+            elif isinstance(c, Type):
+                c = str(c)
+
+            r += c + " " + self.argnames[i].value + ", "
 
         return r[:-2]
 
