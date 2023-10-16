@@ -1,3 +1,5 @@
+import sys
+
 from parglare import Grammar, Parser
 from parser.hny.funcs import *
 from analyze import check
@@ -27,8 +29,8 @@ def parse(code):
         'ret': f_ret,
         'call': f_call,
         'liv': f_leave,
-        'for_loop': f_for,
-        'forever_loop': f_forever,
+        'for_each': f_for,
+        'for_ever': f_forever,
         'line': [
             f_ignore, f_ignore, f_ignore, f_ignore, f_ignore, f_ignore, f_ignore
         ],
@@ -42,7 +44,7 @@ def parse(code):
         'rline': f_ignore
     }
 
-    return Parser(grammar=Grammar.from_file("grammar/hny.glr"), actions=actions).parse(code)
+    return Parser(grammar=Grammar.from_file("grammar.antlr"), actions=actions).parse(code)
 
 
 def gen(filename: str, _of: str):

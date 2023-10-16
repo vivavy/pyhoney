@@ -18,8 +18,10 @@ type: name (lparb int? rparb)?;
 
 line: ret | liv | def_var | forever_loop | for_loop | expr | comment;
 
-forever_loop: "for" lparf line* rparf;
-for_loop: "for" def_def "in" range lparf line* rparf;
+for_ever: "for" lparf line* rparf;
+for_each: "for" def_def "in" range lparf line* rparf;
+for_while: "for" expr lparf line* rparf;
+for_clike: "for" def_var semi expr semi line lparf line* rparf;
 
 liv: "leave";
 

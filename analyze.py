@@ -30,8 +30,9 @@ def err(text, node: LRStackNode, src):
     pos = startsym - linepos - 3
     # length = node.end_position - node.start_position
     print("\nError at line %d: %s\n│   %s" % (lineno + 1, text, line.lstrip()), file=sys.stderr)
+    print("│   " + " " * pos + "~" * (node.end_position - node.start_position), file=sys.stderr)
     print("│   " + " " * pos + "▲", file=sys.stderr)
-    print("╰───" + "─" * pos + "╯\n", file=sys.stderr)
+    print("╰───" + "─" * pos + "╯", file=sys.stderr)
     sys.exit(2)
 
 
@@ -79,7 +80,12 @@ class Frame:
                                                definition.b.array if isinstance(definition.b, Type) else False)
 
     def is_present(self, node):
-        return node.value in self.locals or (self.global_frame.is_present(node.value) if self.global_frame else False)
+        if node is Symbol:
+            return node.value in self.locals or (self.global_frame.is_present(node.value) if
+                                                 self.global_frame else False)
+        else:
+            return node in self.locals or (self.global_frame.is_present(node) if
+                                           self.global_frame else False)
 
     def check_present(self, node):
         try:
@@ -100,8 +106,8 @@ class Frame:
                 self.panic(d, self.src)
 
     def panic(self, d, src):
-        err("variable name used before reference\nLocals: %s\nGlobals: %s" %
-            (pformat(self.locals).replace("\n", "\n    "),
+        err("variable name used before reference: %s\nLocals: %s\nGlobals: %s" %
+            (d.value, pformat(self.locals).replace("\n", "\n    "),
              pformat(self.global_frame.locals).replace("\n", "\n    ")), d.node, src)
 
     def get(self, name, node):
@@ -111,7 +117,7 @@ class Frame:
             try:
                 return self.global_frame.get(name, node)
             except KeyError:
-                err("variable name used before reference", node, self.src)
+                err("variable name used before reference: %s" % name, node, self.src)
 
 
 class Analyzer:
@@ -230,14 +236,24 @@ class Analyzer:
                     if n.op == Base.assign:  # Defining or assigning? Easy, b×tch!
                         print("\tassignment found:", n)
                         # noinspection PyUnresolvedReferences
-                        if self.frame.is_present(n.a.a.value):
-                            if self.frame.check(n.a):
-                                warn("variable already defined", n.node, src)  # i can't invent sth better
+                        if n.a is Expr:
+                            if self.frame.is_present(n.a.a.value):
+                                if self.frame.check(n.a):
+                                    warn("variable already defined", n.node, src)  # i can't invent sth better
 
+                                else:
+                                    return "variable already defined with other type", n.node
                             else:
-                                return "variable already defined with other type", n.node
-                        else:
-                            self.frame.add_local(n.a)  # register new local
+                                self.frame.add_local(n.a)  # register new local
+                        if n.a is Symbol:
+                            if self.frame.is_present(n.a.a.value):
+                                if self.frame.check(n.a):
+                                    warn("variable already defined", n.node, src)  # i can't invent sth better
+
+                                else:
+                                    return "variable already defined with other type", n.node
+                            else:
+                                self.frame.add_local(n.a)  # register new local
 
                         if n.a.op == Base.index:
                             if isinstance(n.a.b, Symbol):

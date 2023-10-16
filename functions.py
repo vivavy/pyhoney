@@ -34,7 +34,6 @@ def dearg(n):
     a = []
     b = []
     for i in n:
-        # print("[*] parser: dearg:", i)
         a += [i.a]
         b += [i.b]
     return a, b
