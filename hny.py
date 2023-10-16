@@ -1,45 +1,38 @@
-import sys
-
 from parglare import Grammar, Parser
 from parser.hny.funcs import *
-from analyze import check
-
-data = {
-    "format": "auto"
-}
-
-symbols: dict[str, Symbol] = {}
+from analyze import *
+import sys
 
 
 def parse(code):
     actions = {
-        'root': f_root,
-        'char': f_char,
-        'string': f_string,
-        'int': f_int,
-        'name': f_name,
-        'range': f_range,
-        'assign': f_assign,
+        'root': Root,
+        'char': CharLiteral,
+        'string': StringLiteral,
+        'int': IntLiteral,
+        'name': NameLiteral,
+        'range': Range,
+        'assign': Assign,
+        'cast': Cast,
         'expr': [
             f_ignore, f_ignore, f_ignore, f_ignore, f_ignore, f_ignore, f_ignore,
-            f_cast, f_ignore, f_binop, f_punop, f_sunop
+            f_ignore, f_ignore, f_binop, f_punop, f_sunop
         ],
-        'geti': f_geti,
-        'getv': f_getv,
-        'ret': f_ret,
-        'call': f_call,
-        'liv': f_leave,
-        'for_each': f_for,
-        'for_ever': f_forever,
+        'ret': Return,
+        'call': Call,
+        'liv': Leave,
+        'for_each': Foreach,
+        'for_ever': Forever,
         'line': [
             f_ignore, f_ignore, f_ignore, f_ignore, f_ignore, f_ignore, f_ignore
         ],
-        'type': f_type,
-        'def_var': f_var,
-        'def_def': f_def,
-        'def_func': f_func,
-        'def_import': f_import,
-        'def_format': f_format,
+        'getv': Lvalue,
+        'type': Type,
+        'def_var': Var,
+        'def_def': Def,
+        'def_func': Function,
+        'def_import': Import,
+        'def_format': Format,
         'comment': f_comment,
         'rline': f_ignore
     }
@@ -47,7 +40,7 @@ def parse(code):
     return Parser(grammar=Grammar.from_file("grammar.antlr"), actions=actions).parse(code)
 
 
-def gen(filename: str, _of: str):
+def gen(filename: str, of: str):
     with open(filename, "rt") as f:
         src = f.read()
 
@@ -57,14 +50,28 @@ def gen(filename: str, _of: str):
 
     prod = parse(src)
 
-    check(prod, src)
+    # print(repr(prod))
 
-    # code = generate(prod)
+    analyzer = Analyzer(prod, src)
 
-    # code = genhisp(procs, prod)
+    analyzer.collect()
 
-    # with open(of, "wt") as f:
-        # f.write(code.strip() + "\n")
+    print("A.FNC:", analyzer.funcs)
+    print("A.TYP:", tuple(type(i).__name__ for i in analyzer.funcs))
+    print("A.FRM", tuple(i.frame.locals for i in analyzer.funcs.values()))
+    print("A.GLB", analyzer.globf.locals)
+
+    return
+
+    status = analyzer.check()
+
+    if status:
+        sys.exit(status)
+
+    code = analyzer.generate()
+
+    with open(of, "wt") as f:
+        f.write(code.strip() + "\n")
 
 
 def get_format(filename: str):
@@ -75,8 +82,8 @@ def get_format(filename: str):
 
     form = 'auto'
 
-    for n in prod:
-        if Format == type(n):
-            form = n.module.value
+    for n in prod.lines:
+        if n.type is Format:
+            form = n.format
 
     return form

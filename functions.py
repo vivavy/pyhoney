@@ -10,11 +10,8 @@ def flat(a):
 
 
 def unpack(n):
-    # print("[*] parser: dearg:", n)
-    # print("\tdecide:", "[]" if not n else "[n[0], *n[1][0]" if n[1] else "[n[0]]")
 
     if not n:
-        # print("\treturn: []")
         return []
 
     if n[1]:
@@ -25,15 +22,14 @@ def unpack(n):
     while "," in n:
         n.remove(",")
 
-    # print("\treturn:", n)
-
     return n.copy()
 
 
 def dearg(n):
+    # print(n)
     a = []
     b = []
     for i in n:
-        a += [i.a]
-        b += [i.b]
+        a += [i.name]
+        b += [i.type]
     return a, b

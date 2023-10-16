@@ -13,12 +13,21 @@ class Root(Node):
         self.node = _
         self.lines = n[0]
 
+        while None in self.lines:
+            self.lines.remove(None)
+
+    def __repr__(self):
+        return "\n\n".join(tuple(repr(i) for i in self.lines))
+
 
 class Format(Node):
     def __init__(self, _, n):
         super().__init__()
         self.node = _
         self.format = n[1].value
+
+    def __repr__(self):
+        return "Format " + self.format
 
 
 class Import(Node):
@@ -27,8 +36,13 @@ class Import(Node):
         self.node = _
         self.module = n[1].value
 
+    def __repr__(self):
+        return "Import " + self.module
+
 
 class FuncArgs(Node):
+    names: list[str]
+    types: list
     def __init__(self):
         super().__init__()
         self.names = []
@@ -42,8 +56,14 @@ class Function(Node):
         self.name = n[1].value
         self.args = FuncArgs
         self.args.names, self.args.types = dearg(unpack(n[3]))
-        self.rtype = n[5][1].base.value if n[5] else Type.new(Type.int, _, False)
-        self.body = n[7]
+        self.rtype = n[5][1].base if n[5] else Type.new(Type.void, _, -1)
+        self.lines = n[7]
+        self.frame = None
+
+    def __repr__(self):
+        return "Function " + self.name + ";\n\t" + "\n\t".join(tuple(self.args.names)) + "\n\n\t" \
+            + "\n\t".join(tuple(repr(i) for i in self.args.types)) + " returns " + repr(self.rtype) + \
+            "\n\n\t" + "\n\t".join(tuple(repr(i) for i in self.lines))
 
 
 class Def(Node):
@@ -53,6 +73,9 @@ class Def(Node):
         self.name = n[0].value
         self.type = n[2]
 
+    def __repr__(self):
+        return "Def " + self.name + " " + repr(self.type)
+
 
 class Var(Node):
     def __init__(self, _, n):
@@ -61,6 +84,9 @@ class Var(Node):
         self.name = n[0].name
         self.type = n[0].type
         self.value = n[2]
+
+    def __repr__(self):
+        return "Var " + self.name + " " + repr(self.type) + " = " + repr(self.value)
 
 
 class Type(Node):
@@ -72,7 +98,11 @@ class Type(Node):
         super().__init__()
         self.node = _
         self.base = Type.to_base(n[0].value)
-        self.array = n[1][2] if n[1] else -1
+        self.array = (int(n[1][1].value) if n[1][1] else 0) if n[1] else -1
+
+    def __repr__(self):
+        return "Type " + Type.to_name(self.base) + \
+            ("[]" if self.array == 0 else "["+str(self.array)+"]" if self.array > 0 else "")
 
     @staticmethod
     def new(base, node, array):
@@ -94,6 +124,12 @@ class Forever(Node):
         self.node = _
         self.lines = n[2]
 
+        while None in self.lines:
+            self.lines.remove(None)
+
+    def __repr__(self):
+        return "Forever\n\t" + "\n\t".join(tuple(self.lines))
+
 
 class Foreach(Node):
     def __init__(self, _, n):
@@ -104,6 +140,13 @@ class Foreach(Node):
         self.array = n[3]
         self.lines = n[5]
 
+        while None in self.lines:
+            self.lines.remove(None)
+
+    def __repr__(self):
+        return "For each " + self.name + " " + repr(self.type) + " " + repr(self.array) + "\n\n\t" + \
+               "\n\t".join(repr(i) for i in self.lines)
+
 
 class Forwhile(Node):
     def __init__(self, _, n):
@@ -111,6 +154,12 @@ class Forwhile(Node):
         self.node = _
         self.cond = n[1]
         self.lines = n[3]
+
+        while None in self.lines:
+            self.lines.remove(None)
+
+    def __repr__(self):
+        return "For while " + repr(self.cond) + "\n\n\t" + "\n\t".join(self.lines)
 
 
 class Forclike(Node):
@@ -122,19 +171,32 @@ class Forclike(Node):
         self.c = n[5]
         self.lines = n[7]
 
+        while None in self.lines:
+            self.lines.remove(None)
+
+    def __repr__(self):
+        return "For c like " + repr(self.a) + " " + repr(self.b) + " " + repr(self.c) + "\n\n\t" + \
+               "\n\t".join(self.lines)
+
 
 class Leave(Node):
     def __init__(self, _, _n):
         super().__init__()
         self.node = _
 
+    def __repr__(self):
+        return "Leave"
+
 
 class Call(Node):
     def __init__(self, _, n):
         super().__init__()
         self.node = _
-        self.name = n[0]
+        self.name = n[0].value
         self.args = unpack(n[2])
+
+    def __repr__(self):
+        return "Call " + self.name + "(" + ", ".join(tuple(repr(i) for i in self.args)) + ")"
 
 
 class Cast(Node):
@@ -144,6 +206,9 @@ class Cast(Node):
         self.expr = n[0]
         self.type = n[2]
 
+    def __repr__(self):
+        return "Cast " + repr(self.expr) + " " + repr(self.type)
+
 
 class Return(Node):
     def __init__(self, _, n):
@@ -151,12 +216,20 @@ class Return(Node):
         self.node = _
         self.rvalue = n[1]
 
+    def __repr__(self):
+        return "Return " + repr(self.rvalue)
+
 
 class Lvalue(Node):
     def __init__(self, _, n):
         super().__init__()
         self.node = _
-        self.expr = n
+        self.name = n[0].value
+        self.index = (n[1][1] if n[1][1] else 0) if n[1] else -1
+
+    def __repr__(self):
+        return "Lvalue " + self.name + \
+            ("["+str(self.index)+"]" if self.index else "@")
 
 
 class Assign(Node):
@@ -166,6 +239,9 @@ class Assign(Node):
         self.lvalue = n[0]
         self.value = n[2]
 
+    def __repr__(self):
+        return "Assign " + repr(self.lvalue) + " = " + repr(self.value)
+
 
 class Range(Node):
     def __init__(self, _, n):
@@ -174,12 +250,49 @@ class Range(Node):
         self.start = n[0]
         self.end = n[2]
 
+    def __repr__(self):
+        return "Range " + repr(self.start) + " " + repr(self.end)
+
+
+class Binop(Node):
+    ops = "+ - * / & @ % ^ | << >> < >".split()
+
+    def __init__(self, _, op1, op2, opr: int):
+        super().__init__()
+        self.node = _
+        self.op1 = op1
+        self.op2 = op2
+        self.opr = opr
+
+    def __repr__(self):
+        return "Binop " + Binop.ops[self.opr] + " " + repr(self.op1) + " " + repr(self.op2)
+
+
+class Unop(Node):
+    ops = "- ~ ! $ ++ --".split()
+
+    prefix = 1
+    suffix = 2
+
+    def __init__(self, _, op, opr: int, pos: int):
+        super().__init__()
+        self.node = _
+        self.op = op
+        self.opr = opr
+        self.pos = pos
+
+    def __repr__(self):
+        return "Unop " + "error prefix suffix".split()[self.pos] + " " + repr(self.op)
+
 
 class Literal(Node):
     def __init__(self, _, n):
         super().__init__()
         self.node = _
         self.value = n
+
+    def __repr__(self):
+        return self.type.__name__ + "[" + self.value + "]"
 
 
 class CharLiteral(Literal):
