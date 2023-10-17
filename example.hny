@@ -2,7 +2,7 @@
 
 format multiboot
 
-# videobuffer #
+# video buffer #
 video: char[] = 0xb8000 as char[]
 
 vga_cursor: int = 0
@@ -13,9 +13,14 @@ fn print(text: str) -> char {
 }
 
 fn show_alphabet() {
-    i: u8 = 0
-	for i: u8 in 0..23 {
+	for i: u32 in 0..23 {
 		video[i] = 'A' + i
+	}
+}
+
+fn show_alphabet_c_loop() {
+	for i: u32 = 0; i < 23; i++ {
+		video[i] = "A" + 3
 	}
 }
 

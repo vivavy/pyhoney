@@ -16,7 +16,7 @@ def_var: def_def equal expr;
 
 type: name (lparb int? rparb)?;
 
-line: ret | liv | def_var | for_ever | for_each | expr | comment;
+line: ret | liv | def_var | for_ever | for_each | for_while | for_clike | expr | comment;
 
 for_ever: "for" lparf line* rparf;
 for_each: "for" def_def "in" range lparf line* rparf;

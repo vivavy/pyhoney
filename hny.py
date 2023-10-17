@@ -1,3 +1,5 @@
+from pprint import pprint
+
 from parglare import Grammar, Parser
 from parser.hny.funcs import *
 from analyze import *
@@ -23,8 +25,10 @@ def parse(code):
         'liv': Leave,
         'for_each': Foreach,
         'for_ever': Forever,
+        'for_while': Forwhile,
+        'for_clike': Forclike,
         'line': [
-            f_ignore, f_ignore, f_ignore, f_ignore, f_ignore, f_ignore, f_ignore
+            f_ignore, f_ignore, f_ignore, f_ignore, f_ignore, f_ignore, f_ignore, f_ignore, f_ignore
         ],
         'getv': Lvalue,
         'type': Type,
@@ -40,7 +44,7 @@ def parse(code):
     return Parser(grammar=Grammar.from_file("grammar.antlr"), actions=actions).parse(code)
 
 
-def gen(filename: str, of: str):
+def gen(filename: str, _of: str):
     with open(filename, "rt") as f:
         src = f.read()
 
@@ -50,23 +54,16 @@ def gen(filename: str, of: str):
 
     prod = parse(src)
 
-    # print(repr(prod))
-
     analyzer = Analyzer(prod, src)
 
     analyzer.collect()
-
-    print("A.FNC:", analyzer.funcs)
-    print("A.TYP:", tuple(type(i).__name__ for i in analyzer.funcs))
-    print("A.FRM", tuple(i.frame.locals for i in analyzer.funcs.values()))
-    print("A.GLB", analyzer.globf.locals)
-
-    return
 
     status = analyzer.check()
 
     if status:
         sys.exit(status)
+
+    return
 
     code = analyzer.generate()
 
@@ -83,7 +80,7 @@ def get_format(filename: str):
     form = 'auto'
 
     for n in prod.lines:
-        if n.type is Format:
+        if isinstance(n, Format):
             form = n.format
 
     return form

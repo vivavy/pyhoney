@@ -3,7 +3,7 @@ from functions import *
 
 class Node:
     def __init__(self):
-        self.type = self.__class__  # allowed syntax: if n.type is Root: …
+        ...  # self.type = self.__class__  # allowed syntax: if n.type is Root: …
 
 
 # Root node type
@@ -43,6 +43,7 @@ class Import(Node):
 class FuncArgs(Node):
     names: list[str]
     types: list
+
     def __init__(self):
         super().__init__()
         self.names = []
@@ -56,7 +57,7 @@ class Function(Node):
         self.name = n[1].value
         self.args = FuncArgs
         self.args.names, self.args.types = dearg(unpack(n[3]))
-        self.rtype = n[5][1].base if n[5] else Type.new(Type.void, _, -1)
+        self.rtype = n[5][1] if n[5] else Type.new(Type.void, _, -1)
         self.lines = n[7]
         self.frame = None
 
@@ -102,7 +103,13 @@ class Type(Node):
 
     def __repr__(self):
         return "Type " + Type.to_name(self.base) + \
-            ("[]" if self.array == 0 else "["+str(self.array)+"]" if self.array > 0 else "")
+            ("[]" if self.array == 0 else "[" + str(self.array) + "]" if self.array > 0 else "")
+
+    def as_literal(self):
+        return (IntLiteral if self.array >= 0 else IntLiteral if
+                self.base not in (Type.str, Type.wstr, Type.char, Type.wchar) else StringLiteral
+                if self.base in (Type.str, Type.wstr)
+                else CharLiteral)(self.node, "")
 
     @staticmethod
     def new(base, node, array):
@@ -114,7 +121,8 @@ class Type(Node):
 
     @staticmethod
     def to_base(name: str):
-        if name == 'void': return 1
+        if name == 'void':
+            return 1
         return "error int str u8 i8 u16 i16 u32 i32 u64 i64 uint char wchar wstr c_str c_wstr".split().index(name)
 
 
@@ -145,7 +153,7 @@ class Foreach(Node):
 
     def __repr__(self):
         return "For each " + self.name + " " + repr(self.type) + " " + repr(self.array) + "\n\n\t" + \
-               "\n\t".join(repr(i) for i in self.lines)
+            "\n\t".join(repr(i) for i in self.lines)
 
 
 class Forwhile(Node):
@@ -175,8 +183,8 @@ class Forclike(Node):
             self.lines.remove(None)
 
     def __repr__(self):
-        return "For c like " + repr(self.a) + " " + repr(self.b) + " " + repr(self.c) + "\n\n\t" + \
-               "\n\t".join(self.lines)
+        return "For clike " + repr(self.a) + " " + repr(self.b) + " " + repr(self.c) + "\n\n\t\t" + \
+            "\n\t\t".join(tuple(repr(i) for i in self.lines))
 
 
 class Leave(Node):
@@ -194,6 +202,7 @@ class Call(Node):
         self.node = _
         self.name = n[0].value
         self.args = unpack(n[2])
+        self.type = None
 
     def __repr__(self):
         return "Call " + self.name + "(" + ", ".join(tuple(repr(i) for i in self.args)) + ")"
@@ -204,7 +213,7 @@ class Cast(Node):
         super().__init__()
         self.node = _
         self.expr = n[0]
-        self.type = n[2]
+        self.type = n[2].as_literal()
 
     def __repr__(self):
         return "Cast " + repr(self.expr) + " " + repr(self.type)
@@ -229,7 +238,7 @@ class Lvalue(Node):
 
     def __repr__(self):
         return "Lvalue " + self.name + \
-            ("["+str(self.index)+"]" if self.index else "@")
+            ("[" + str(self.index) + "]" if self.index else "@")
 
 
 class Assign(Node):
@@ -238,6 +247,7 @@ class Assign(Node):
         self.node = _
         self.lvalue = n[0]
         self.value = n[2]
+        self.type = self.value.type
 
     def __repr__(self):
         return "Assign " + repr(self.lvalue) + " = " + repr(self.value)
@@ -249,6 +259,7 @@ class Range(Node):
         self.node = _
         self.start = n[0]
         self.end = n[2]
+        self.type = Type(_, [NameLiteral(_, "int"), ["[", IntLiteral(_, "0"), "]"]])
 
     def __repr__(self):
         return "Range " + repr(self.start) + " " + repr(self.end)
@@ -263,6 +274,7 @@ class Binop(Node):
         self.op1 = op1
         self.op2 = op2
         self.opr = opr
+        self.type = self.op1.type
 
     def __repr__(self):
         return "Binop " + Binop.ops[self.opr] + " " + repr(self.op1) + " " + repr(self.op2)
@@ -280,6 +292,7 @@ class Unop(Node):
         self.op = op
         self.opr = opr
         self.pos = pos
+        self.type = self.op.type
 
     def __repr__(self):
         return "Unop " + "error prefix suffix".split()[self.pos] + " " + repr(self.op)
@@ -290,9 +303,16 @@ class Literal(Node):
         super().__init__()
         self.node = _
         self.value = n
+        self.type = self
 
     def __repr__(self):
-        return self.type.__name__ + "[" + self.value + "]"
+        return self.__class__.__name__ + "[" + self.value + "]"
+
+    def as_literal(self):
+        return self
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__)
 
 
 class CharLiteral(Literal):
