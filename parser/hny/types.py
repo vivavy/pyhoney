@@ -1,4 +1,5 @@
 from functions import *
+from sugar import overload
 
 
 class Node:
@@ -106,10 +107,8 @@ class Type(Node):
             ("[]" if self.array == 0 else "[" + str(self.array) + "]" if self.array > 0 else "")
 
     def as_literal(self):
-        return (IntLiteral if self.array >= 0 else IntLiteral if
-                self.base not in (Type.str, Type.wstr, Type.char, Type.wchar) else StringLiteral
-                if self.base in (Type.str, Type.wstr)
-                else CharLiteral)(self.node, "")
+        return (IntLiteral(self.node, "") if self.array >= 0 or self.base not in "str wstr".split()
+                else StringLiteral(self.node, ""))
 
     @staticmethod
     def new(base, node, array):
@@ -208,12 +207,12 @@ class Call(Node):
         return "Call " + self.name + "(" + ", ".join(tuple(repr(i) for i in self.args)) + ")"
 
 
-class Cast(Node):
+class Cast:
     def __init__(self, _, n):
         super().__init__()
         self.node = _
         self.expr = n[0]
-        self.type = n[2].as_literal()
+        self.type = n[2]
 
     def __repr__(self):
         return "Cast " + repr(self.expr) + " " + repr(self.type)
@@ -306,17 +305,23 @@ class Literal(Node):
         self.type = self
 
     def __repr__(self):
-        return self.__class__.__name__ + "[" + self.value + "]"
+        return self.__class__.__name__.removesuffix("Literal" if not self.value else "") + \
+            ("[" + self.value + "]" if self.value else "")
 
     def as_literal(self):
-        return self
+        return self.__class__(self.node, "")
 
     def __eq__(self, other):
-        return isinstance(other, self.__class__)
+        return self.__class__.__name__ == other.__class__.__name__
+
+    def raw(self):
+        return self.__class__.__name__
 
 
 class CharLiteral(Literal):
-    ...
+    @overload
+    def as_literal(self):
+        return IntLiteral(self.node, self.value)
 
 
 class StringLiteral(Literal):

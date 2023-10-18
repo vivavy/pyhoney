@@ -20,7 +20,7 @@ fn show_alphabet() {
 
 fn show_alphabet_c_loop() {
 	for i: u32 = 0; i < 23; i++ {
-		video[i] = "A" + 3
+		video[i] = A + 3
 	}
 }
 

@@ -1,13 +1,18 @@
 # TODO: make test for binaries existance
 
 import os
+import sys
+
 import hny
 import argparse
 
 
 #  format is a function makes file ready for use
 def f_auto(i, o, _no_stdlib, _full_log, name, _module, rt, cf):
-    hny.gen(i, name + ".fasm")
+    gstatus = hny.gen(i, name + ".fasm")
+
+    if gstatus:
+        return gstatus
 
     os.system("fasm " + name + ".fasm " + cf)
 
@@ -18,9 +23,14 @@ def f_auto(i, o, _no_stdlib, _full_log, name, _module, rt, cf):
         os.system("rm " + name + ".fasm")
         os.system("rm " + name + ".o")
 
+    return 0
+
 
 def f_multiboot(i, o, _no_stdlib, _full_log, name, module, rt, cf):
-    hny.gen(i, name + ".fasm")
+    gstatus = hny.gen(i, name + ".fasm")
+
+    if gstatus:
+        return gstatus
 
     os.system("fasm " + name + ".fasm " + cf)
 
@@ -32,6 +42,8 @@ def f_multiboot(i, o, _no_stdlib, _full_log, name, module, rt, cf):
     if rt:
         os.system("rm " + name + ".fasm")
         os.system("rm " + name + ".o")
+
+    return 0
 
 
 forms = {
@@ -56,5 +68,5 @@ name_hash = hex(hash(module_name))[2:]
 
 form = args.format or hny.get_format(args.FILE)
 
-forms[form](args.FILE, args.output, args.no_stdlib,
-            args.full_log, name_hash, module_name, not args.save_temps, args.c_flags or "")
+status = forms[form](args.FILE, args.output, args.no_stdlib,
+                     args.full_log, name_hash, module_name, not args.save_temps, args.c_flags or "")

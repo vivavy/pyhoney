@@ -56,14 +56,17 @@ def gen(filename: str, _of: str):
 
     analyzer = Analyzer(prod, src)
 
-    analyzer.collect()
+    status = analyzer.collect()
+
+    if status:
+        return status
 
     status = analyzer.check()
 
     if status:
-        sys.exit(status)
+        return status + 1
 
-    return
+    return 0
 
     code = analyzer.generate()
 

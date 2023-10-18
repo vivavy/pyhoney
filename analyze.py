@@ -4,12 +4,12 @@ from parser.hny.types import *
 import sys
 
 
-allowed_ops: set[tuple] = {
-    (IntLiteral, IntLiteral),
-    # [StringLiteral, StringLiteral],  # not allowed yet
-    (CharLiteral, CharLiteral),
-    (CharLiteral, IntLiteral),
-    (IntLiteral, CharLiteral),
+allowed_ops: set[str] = {
+    'IntLiteral IntLiteral',
+    # 'StringLiteral StringLiteral', # not allowed yet
+    'CharLiteral CharLiteral',
+    'CharLiteral IntLiteral',
+    'IntLiteral CharLiteral',
 }
 
 
@@ -68,7 +68,7 @@ class Frame:
     def is_present(self, name):
         return name in self.locals or name in self.global_frame.locals
 
-    def check_present(self, name, node):
+    def check_present(self, name, _node):
         return name in self.locals or (name in self.global_frame.locals if self.global_frame else False)
 
     def check(self, node, name, types):
@@ -109,7 +109,7 @@ class Analyzer:
 
     def __init__(self, prod, src):
         self.prod = prod
-        self.funcs: dict[str,Function] = dict()
+        self.funcs: dict[str, Function] = dict()
         self.globf = Frame(None, None, src)
         self.imports = []
         self.frame = None
@@ -122,13 +122,19 @@ class Analyzer:
         frame = self.frame or self.globf
 
         if isinstance(node, Root):  # it is root node
+
+            status = 0
+
             for line in node.lines:  # collect all from its members
-                self.collect(line)
+                status += self.collect(line)
+
+            return status
 
         if isinstance(node, Var):  # it is a new variable definition with initialization
             if frame.check_present(node.name, node):
                 if not frame.check(node, node.name, node.type):
                     err("Variable `%s` type don't match" % node.name, node, self.src)
+                    return 1
                 else:
                     warn("Variable `%s` already defined" % node.name, node, self.src)
             else:
@@ -139,6 +145,7 @@ class Analyzer:
             if frame.check_present(node.name, node):
                 if not frame.check(node, node.name, node.type):
                     err("Variable `%s` type don't match" % node.name, node, self.src)
+                    return 1
                 else:
                     warn("Variable `%s` already defined" % node.name, node, self.src)
             else:  # local scope
@@ -147,116 +154,212 @@ class Analyzer:
         if isinstance(node, Function):  # it is a function definition
             if self.frame:
                 err("Nested functions not allowed", node.node, self.src)
-                return
+                return 1
 
             self.funcs[node.name] = node  # register new function
             self.frame = Frame(node, self.globf, self.src)  # setup new frame
 
+            status = 0
+
             for line in node.lines:  # and check the body recursively
-                self.collect(line)
+                status += self.collect(line)
 
             self.funcs[self.frame.fn.name].frame = self.frame
             self.frame = None  # clear frame
 
+            return status
+
         if isinstance(node, Forever):  # it is forever loop
+
+            status = 0
+
             # check the body recursively
             for line in node.lines:
-                self.collect(line)
+                status += self.collect(line)
+
+            return status
 
         if isinstance(node, Foreach):  # it is for each loop
             # register new variable
             if self.frame.is_present(node.name):
                 if not self.frame.check(node, node.name, node.type):
                     err("Variable `%s` type don't match" % node.name, node.type, self.src)
+                    return 1
                 else:
                     warn("Variable `%s` already defined" % node.name, node, self.src)
             else:
                 self.frame.add_local(node.name, node.type)
+
+            status = 0
+
             # and check the body recursively
             for line in node.lines:
-                self.collect(line)
+                status += self.collect(line)
+
+            return status
 
         if isinstance(node, Forwhile):  # it is while loop
+
+            status = 0
+
             # check the body recursively
             for line in node.lines:
-                self.collect(line)
+                status += self.collect(line)
+
+            return status
 
         if isinstance(node, Forclike):  # it is C for loop
             self.collect(node.a)  # check its header
+
+            status = 0
+
             # and check the body recursively
             for line in node.lines:
-                self.collect(line)
+                status += self.collect(line)
+
+            return status
+
+        return 0
 
     def check(self, node=None):
         if node is None:
             node = self.prod
 
-        print(">>>", node, "\b\n<<<\n\n")
+        frame = self.frame or self.globf
+
+        # print(">>>", node, "\b\n<<<\n\n")
+
+        if isinstance(node, NameLiteral):
+            frame.check_present(node.value, node.node)
+            if not frame.is_present(node.value):
+                return 1
+            node.type = frame.get(node.value, node).as_literal()
+
+        if isinstance(node, CharLiteral):
+            node.value = repr(ord(eval(node.value)))
+            node.type = IntLiteral(node.node, node.value)
+
+        if isinstance(node, Call):
+            if node.name not in self.funcs:
+                frame.panic(node, node.name, self.src)
+            node.type = self.funcs[node.name].rtype.as_literal()
 
         if isinstance(node, Binop):
-            if (node.op1.type, node.op2.type) not in allowed_ops:
-                err("Operation types aren't allowed: `%s` and `%s`" % (repr(node.op1.type), repr(node.op2.type)),
+            status = 0
+            status += self.check(node.op1) or 0
+            status += self.check(node.op2) or 0
+            if status:
+                return 1
+            if (node.op1.type.__class__.__name__ + " " + node.op2.type.__class__.__name__) not in allowed_ops:
+                err("Operation types aren't allowed: `%s` and `%s`" %
+                    (repr(node.op1.type.as_literal()), repr(node.op2.type.as_literal())),
                     node, self.src)
+                return 1
 
         if isinstance(node, Return):
             self.check(node.rvalue)
-            print(self.frame.fn, node.rvalue)
             if self.frame.fn.rtype.as_literal() != node.rvalue.type.as_literal():
                 err("Wrong return type: expected `%s`, got `%s" % (
                     repr(self.frame.fn.rtype), repr(node.rvalue.type)
                 ), node.rvalue, self.src)
+                return 1
 
         if isinstance(node, Root):  # it is root node
+            status = 0
+
             for line in node.lines:  # collect all from its members
-                self.check(line)
+                status += self.check(line)
+
+            return status
 
         if isinstance(node, Var):  # it is a new variable definition with initialization
             if self.frame:
-                if not self.frame.check(node, node.name, node.type):
-                    err("Variable type don't match", node.type, self.src)
+                if not self.frame.check(node, node.name, node.type.as_literal()):
+                    err("Variable type don't match", node.node, self.src)
+                    return 1
             else:
-                if not self.globf.check(node, node.name, node.type):
-                    err("Variable type don't match", node.type, self.src)
+                if not self.globf.check(node, node.name, node.type.as_literal()):
+                    err("Variable type don't match", node.type.as_literal(), self.src)
+                    return 1
             if isinstance(node.value, Call):
-                node.value.type = self.funcs[node.value.name].rtype.as_literal()
-            if not node.type.as_literal() == node.value.type:
+                node.value.type = self.funcs[node.value.name].rtype
+            if not node.type.as_literal() == node.value.type.as_literal():
                 err("Variable type and expression type don't match: `%s` and `%s`" % (
-                    repr(node.type.as_literal()), repr(node.value.type)
+                    repr(node.type.as_literal()) + " " + repr(node.type),
+                    repr(node.value.type.as_literal())
                 ), node.value, self.src)
+                return 1
 
         if isinstance(node, Def):  # it is a new variable definition without initialization
             if not self.frame.check(node, node.name, node.type):
                 err("Variable type don't match", node.type, self.src)
+                return 1
 
         if isinstance(node, Function):  # it is a function definition
             self.frame = self.funcs[node.name].frame
 
+            status = 0
+
             for line in node.lines:  # and check the body recursively
-                self.check(line)
+                status += self.check(line)
 
             self.frame = None  # clear frame
 
+            return status
+
         if isinstance(node, Forever):  # it is forever loop
+
+            status = 0
+
             # check the body recursively
             for line in node.lines:
-                self.check(line)
+                status += self.check(line)
+
+            return status
 
         if isinstance(node, Foreach):  # it is for each loop
             # register new variable
             if not self.frame.check(node, node.name, node.type):
                 err("Variable type don't match", node.type, self.src)
+                return 1
+
+            status = 0
 
             # and check the body recursively
             for line in node.lines:
-                self.check(line)
+                status += self.check(line)
+
+            return status
 
         if isinstance(node, Forwhile):  # it is while loop
+
+            status = 0
+
             # check the body recursively
             for line in node.lines:
-                self.check(line)
+                status += self.check(line)
+
+            return status
 
         if isinstance(node, Forclike):  # it is C for loop
             self.check(node.a)  # check its header
+
+            status = 0
+
             # and check the body recursively
             for line in node.lines:
-                self.check(line)
+                status += self.check(line)
+
+            return status
+
+        if isinstance(node, Assign):
+            self.check(node.value)
+            node.lvalue.type = frame.get(node.lvalue.name, node.lvalue.node).as_literal()
+            if not frame.is_present(node.lvalue.name):
+                return 1
+            if node.lvalue.type.as_literal() != node.value.type.as_literal():
+                err("lvalue and rvalue types don't match: `%s` and `%s`" %
+                    (node.lvalue.type.as_literal(), node.value.type.as_literal()), node, self.src)
+                return 1
+
+        return 0
