@@ -334,3 +334,6 @@ class IntLiteral(Literal):
 
 class NameLiteral(Literal):
     ...
+
+
+Line = Forever | Foreach | Forwhile | Forclike | Leave | Call | Return | Assign

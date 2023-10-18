@@ -8,11 +8,16 @@ import argparse
 
 
 #  format is a function makes file ready for use
-def f_auto(i, o, _no_stdlib, _full_log, name, _module, rt, cf):
-    gstatus = hny.gen(i, name + ".fasm")
+def f_auto(i, o, _no_stdlib, _full_log, name, _module, rt, cf, ats):
+    gstatus = hny.gen(i, name + ".fasm", "auto")
 
     if gstatus:
         return gstatus
+
+    if ats:
+        with open(name + ".fasm", "rt") as f:
+            asm = f.read()
+        print(asm)
 
     os.system("fasm " + name + ".fasm " + cf)
 
@@ -26,11 +31,16 @@ def f_auto(i, o, _no_stdlib, _full_log, name, _module, rt, cf):
     return 0
 
 
-def f_multiboot(i, o, _no_stdlib, _full_log, name, module, rt, cf):
-    gstatus = hny.gen(i, name + ".fasm")
+def f_multiboot(i, o, _no_stdlib, _full_log, name, module, rt, cf, ats):
+    gstatus = hny.gen(i, name + ".fasm", "multiboot")
 
     if gstatus:
         return gstatus
+
+    if ats:
+        with open(name + ".fasm", "rt") as f:
+            asm = f.read()
+        print(asm)
 
     os.system("fasm " + name + ".fasm " + cf)
 
@@ -56,6 +66,7 @@ argparser = argparse.ArgumentParser("hny")
 argparser.add_argument("--no-stdlib", action="store_true", dest="no_stdlib")
 argparser.add_argument("--full-log", action="store_true", dest="full_log")
 argparser.add_argument("--save-temps", action="store_true", dest="save_temps")
+argparser.add_argument("--p", action="store_true", dest="asm_to_stdout")
 argparser.add_argument("--c-flags", dest="c_flags")
 argparser.add_argument("-f", dest="format")
 argparser.add_argument("-o", dest="output")
@@ -69,4 +80,5 @@ name_hash = hex(hash(module_name))[2:]
 form = args.format or hny.get_format(args.FILE)
 
 status = forms[form](args.FILE, args.output, args.no_stdlib,
-                     args.full_log, name_hash, module_name, not args.save_temps, args.c_flags or "")
+                     args.full_log, name_hash, module_name, not args.save_temps, args.c_flags or "",
+                     args.asm_to_stdout)

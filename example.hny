@@ -14,13 +14,13 @@ fn print(text: str) -> char {
 
 fn show_alphabet() {
 	for i: u32 in 0..23 {
-		video[i] = 'A' + i
+		video[i] = 'A' + i as u8 as u8
 	}
 }
 
 fn show_alphabet_c_loop() {
 	for i: u32 = 0; i < 23; i++ {
-		video[i] = A + 3
+		video[i] = 'A' + 3
 	}
 }
 

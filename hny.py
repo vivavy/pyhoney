@@ -1,9 +1,14 @@
 from pprint import pprint
-
+from generator import *
 from parglare import Grammar, Parser
 from parser.hny.funcs import *
 from analyze import *
 import sys
+
+
+generators: dict[str, Generator.__class__] = {
+    "multiboot": GeneratorMultiboot,
+}
 
 
 def parse(code):
@@ -44,7 +49,7 @@ def parse(code):
     return Parser(grammar=Grammar.from_file("grammar.antlr"), actions=actions).parse(code)
 
 
-def gen(filename: str, _of: str):
+def gen(filename: str, of: str, form: str):
     with open(filename, "rt") as f:
         src = f.read()
 
@@ -66,12 +71,16 @@ def gen(filename: str, _of: str):
     if status:
         return status + 1
 
-    return 0
+    generator = generators[form](analyzer, src, prod)
 
-    code = analyzer.generate()
+    generator.generate()
+
+    code = generator.redy
 
     with open(of, "wt") as f:
         f.write(code.strip() + "\n")
+
+    return 0
 
 
 def get_format(filename: str):

@@ -68,6 +68,9 @@ class Frame:
     def is_present(self, name):
         return name in self.locals or name in self.global_frame.locals
 
+    def is_local(self, name):
+        return name in self.locals
+
     def check_present(self, name, _node):
         return name in self.locals or (name in self.global_frame.locals if self.global_frame else False)
 
@@ -109,7 +112,7 @@ class Analyzer:
 
     def __init__(self, prod, src):
         self.prod = prod
-        self.funcs: dict[str, Function] = dict()
+        self.funcs: dict[str, Function] = {}
         self.globf = Frame(None, None, src)
         self.imports = []
         self.frame = None
@@ -250,7 +253,7 @@ class Analyzer:
             status += self.check(node.op2) or 0
             if status:
                 return 1
-            if (node.op1.type.__class__.__name__ + " " + node.op2.type.__class__.__name__) not in allowed_ops:
+            if (node.op1.type.as_literal().raw() + " " + node.op2.type.as_literal().raw()) not in allowed_ops:
                 err("Operation types aren't allowed: `%s` and `%s`" %
                     (repr(node.op1.type.as_literal()), repr(node.op2.type.as_literal())),
                     node, self.src)
