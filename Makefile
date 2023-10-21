@@ -1,3 +1,4 @@
+CC=cc
 NAME=pyhoney
 
 main:

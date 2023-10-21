@@ -1,5 +1,6 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
+*/__pycache__/
 *.py[cod]
 *$py.class
 
@@ -164,7 +165,7 @@ cython_debug/
 *.elf
 *.out
 *.hsp
-*.c
+# *.c
 *.pgt
 *.pyc
 *__pycache__*
