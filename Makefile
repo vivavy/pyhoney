@@ -8,14 +8,14 @@ main:
 	@exit
 
 install:
-	@mkdir -p /usr/share/$(NAME) /usr/share/$(NAME)/grammar \
-		  /usr/share/$(NAME)/objects /usr/share/$(NAME)/lds \
-		  ~/.config/sublime-text/Packages
+	@mkdir -p /usr/share/$(NAME) /usr/share/$(NAME)/objects \
+		/usr/share/$(NAME)/lds ~/.config/sublime-text/Packages \
+		~/.config/micro/syntax/
 	@cp *.py /usr/share/$(NAME)
 	@cp support/sublime/Honey.sublime-syntax ~/.config/sublime-text/Packages/Honey.sublime-syntax
-	@cp support/sublime/hny.yaml ~/.config/micro/syntax/
+	@cp support/micro/hny.yaml ~/.config/micro/syntax/
 	@rm /usr/share/$(NAME)/update.py
-	@cp grammar/*.glr /usr/share/$(NAME)/grammar
+	@cp grammar.antlr /usr/share/$(NAME)/
 	@cp lds/*.ld /usr/share/$(NAME)/lds
 	@echo
 
