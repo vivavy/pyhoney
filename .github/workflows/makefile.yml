@@ -22,7 +22,7 @@ jobs:
         python-version: '3.11'
         cache: 'pip'
         cache-dependency-path: 'requirements.txt'
-    - run: sudo mkdir "/usr/share/$NAME"
+    # - run: sudo mkdir "/usr/share/$NAME"
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
@@ -32,6 +32,6 @@ jobs:
     - name: Run Honey
       run: |
         ls 
-        python "РONEY_PATH/main.py"
+        python "HONEY_PATH/main.py"
 
       
