@@ -25,4 +25,6 @@ jobs:
         pip install -r requirements.txt
     - name: Install Honey
       run: make install
+    - name: Run Honey
+      run: python3 /usr/share/$(NAME)/main.py
       
