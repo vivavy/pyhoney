@@ -1,4 +1,4 @@
-name: Makefile CI
+name: Honey tester
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     branches: [ "fasm" ]
 
 jobs:
-  build:
+  test:
 
     runs-on: ubuntu-latest
     
