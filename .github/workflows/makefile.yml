@@ -26,5 +26,5 @@ jobs:
     - name: Install Honey
       run: make install
     - name: Run Honey
-      run: python3 /usr/share/$(NAME)/main.py
+      run: python /usr/share/$(NAME)/main.py
       
