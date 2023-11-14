@@ -30,6 +30,8 @@ jobs:
     - name: Install Honey
       run: make install
     - name: Run Honey
-      run: python "/usr/share/$NAME/main.py"
+      run: |
+        python "/usr/share/$NAME/main.py"
+        ls /usr/share/$NAME/
 
       
