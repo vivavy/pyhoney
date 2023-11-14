@@ -1,4 +1,5 @@
 NAME=pyhoney
+HONEY_PATH=/usr/share/$(NAME)
 
 main:
 	@echo "Type \`sudo make install' and \`make apply' for installation \
@@ -8,15 +9,18 @@ main:
 	@exit
 
 install:
-	@mkdir -p /usr/share/$(NAME) /usr/share/$(NAME)/objects \
-		/usr/share/$(NAME)/lds ~/.config/sublime-text/Packages \
-		~/.config/micro/syntax/
-	@cp *.py /usr/share/$(NAME)
+	@mkdir -p HONEY_PATH HONEY_PATH/objects HONEY_PATH/parser \
+		HONEY_PATH/lds HONEY_PATH/compiler HONEY_PATH/analyzer \
+		~/.config/sublime-text/Packages ~/.config/micro/syntax 
+	@cp *.py HONEY_PATH
 	@cp support/sublime/Honey.sublime-syntax ~/.config/sublime-text/Packages/Honey.sublime-syntax
-	@cp support/micro/hny.yaml ~/.config/micro/syntax/
+	@cp support/micro/hny.yaml ~/.config/micro/syntax
 	@rm /usr/share/$(NAME)/update.py
-	@cp grammar.antlr /usr/share/$(NAME)/
-	@cp lds/*.ld /usr/share/$(NAME)/lds
+	@cp grammar.antlr HONEY_PATH
+	@cp lds/*.ld HONEY_PATH/lds
+	@cp parser/* HONEY_PATH/parser
+	@cp compiler/* HONEY_PATH/compiler
+	@cp analyzer/* HONEY_PATH/analyzer
 	@echo
 
 apply:
@@ -29,6 +33,7 @@ remove:
 	@rm -rf /usr/share/$(NAME)
 	@rm -f /bin/hny
 	@rm -f ~/.config/sublime-text/Honey.sublime-syntax
+	@rm -f ~/.config/micro/syntax/hny.yaml
 	@echo
 	@echo Done
 	@echo
