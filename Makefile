@@ -22,7 +22,7 @@ install:
 	@cp -r compiler/* HONEY_PATH/compiler
 	@cp -r analyzer/* HONEY_PATH/analyzer
 	@echo "$(HONEY_PATH)"
-	@cat HONEY_PATH
+	@ls HONEY_PATH
 
 apply:
 	@echo "python3 /usr/share/$(NAME)/main.py $@" > /bin/hny
