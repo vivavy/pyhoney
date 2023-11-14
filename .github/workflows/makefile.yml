@@ -32,6 +32,6 @@ jobs:
     - name: Run Honey
       run: |
         ls 
-        python "/usr/share/$NAME/main.py"
+        python "РONEY_PATH/main.py"
 
       
