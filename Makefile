@@ -15,12 +15,12 @@ install:
 	@cp *.py HONEY_PATH
 	@cp support/sublime/Honey.sublime-syntax ~/.config/sublime-text/Packages/Honey.sublime-syntax
 	@cp support/micro/hny.yaml ~/.config/micro/syntax
-	@rm /usr/share/$(NAME)/update.py
+	@rm HONEY_PATH/update.py
 	@cp grammar.antlr HONEY_PATH
 	@cp lds/*.ld HONEY_PATH/lds
-	@cp parser/* HONEY_PATH/parser
-	@cp compiler/* HONEY_PATH/compiler
-	@cp analyzer/* HONEY_PATH/analyzer
+	@cp -r parser/* HONEY_PATH/parser
+	@cp -r compiler/* HONEY_PATH/compiler
+	@cp -r analyzer/* HONEY_PATH/analyzer
 	@echo
 
 apply:
@@ -30,7 +30,7 @@ uninstall: remove
 	@printf ""
 
 remove:
-	@rm -rf /usr/share/$(NAME)
+	@rm -rf HONEY_PATH
 	@rm -f /bin/hny
 	@rm -f ~/.config/sublime-text/Honey.sublime-syntax
 	@rm -f ~/.config/micro/syntax/hny.yaml
