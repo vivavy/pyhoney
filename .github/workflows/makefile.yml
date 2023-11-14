@@ -12,7 +12,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       NAME: "pyhoney"
-      HONEY_PATH: "/usr/share/$(NAME)"
 
 
     steps:
@@ -29,5 +28,5 @@ jobs:
     - name: Install Honey
       run: sudo make install
     - name: Run Honey
-      run: python "$HONEY_PATH/main.py"
+      run: python "/usr/share/$NAME/main.py"
       
