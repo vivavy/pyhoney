@@ -8,6 +8,7 @@ main:
 	@echo "For same version fix, type \`sudo make patch'"
 	@exit
 
+
 install:
 	@mkdir -p HONEY_PATH HONEY_PATH/objects HONEY_PATH/parser \
 		HONEY_PATH/lds HONEY_PATH/compiler HONEY_PATH/analyzer \
