@@ -1,4 +1,4 @@
-name: Honey tester
+name: Honey Tester
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     branches: [ "fasm" ]
 
 jobs:
-  test:
+  Test:
 
     runs-on: ubuntu-latest
     
