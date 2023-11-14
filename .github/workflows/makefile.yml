@@ -10,7 +10,10 @@ jobs:
   Test:
 
     runs-on: ubuntu-latest
-    
+    env:
+      NAME: "pyhoney"
+      HONEY_PATH: "/usr/share/$(NAME)"
+
 
     steps:
     
