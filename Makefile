@@ -21,7 +21,8 @@ install:
 	@cp -r parser/* HONEY_PATH/parser
 	@cp -r compiler/* HONEY_PATH/compiler
 	@cp -r analyzer/* HONEY_PATH/analyzer
-	@echo
+	@echo HONEY_PATH
+	@echo cat HONEY_PATH
 
 apply:
 	@echo "python3 /usr/share/$(NAME)/main.py $@" > /bin/hny
