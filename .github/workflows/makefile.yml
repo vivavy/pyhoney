@@ -28,7 +28,7 @@ jobs:
         pip install -r requirements.txt
     - name: Install Honey
       run: make install
-    - name: Run Honey
+    - name: Test Honey
       run: python "HONEY_PATH/main.py"
 
       
