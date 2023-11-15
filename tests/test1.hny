@@ -1,0 +1,6 @@
+format elf:x86:64 executable
+fn main() {
+    
+print("Hello, World!")
+
+}

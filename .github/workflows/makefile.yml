@@ -28,7 +28,11 @@ jobs:
         pip install -r requirements.txt
     - name: Install Honey
       run: make install
-    - name: Test Honey
+    - name: Run Honey
       run: python "HONEY_PATH/main.py" -h
-
+    - uses: pavelzw/pytest-action@v2
+      with:
+        emoji: false
+        verbose: false
+        job-summary: true
       
