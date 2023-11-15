@@ -29,6 +29,6 @@ jobs:
     - name: Install Honey
       run: make install
     - name: Test Honey
-      run: python "HONEY_PATH/main.py"
+      run: python "HONEY_PATH/main.py" -h
 
       
